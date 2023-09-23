@@ -1,0 +1,137 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "Common",
+  "definitions": {
+    "Household": {
+      "type": "object",
+      "title": "Household Details",
+      "properties": {
+        "householdId": {
+          "type": "string",
+          "title": "DIGIT Household ID"
+        },
+        "memberCount": {
+          "type": "integer",
+          "title": "Count of members of Household"
+        },
+        "address": {
+          "$ref": "#/definitions/Address"
+        },
+        "createdBy": {
+          "type": "string",
+          "title": "Username of the person creating the Household"
+        }
+      }
+    },
+    "Individual": {
+      "type": "object",
+      "title": "Individual/Head of Household",
+      "properties": {
+        "individualId": {
+          "type": "string",
+          "title": "DIGIT Individual ID"
+        },
+        "name": {
+          "$ref": "#/definitions/Name"
+        },
+        "phoneNo": {
+          "type": "string",
+          "title": "Phone Number"
+        },
+        "email": {
+          "type": "string",
+          "title": "Email Address of the Individual"
+        },
+        "identifiers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/Identifier"
+          }
+        },
+        "address": {
+          "$ref": "#/definitions/Address"
+        },
+        "createdBy": {
+          "type": "string",
+          "title": "Username of the person creating the Household"
+        }
+      }
+    },
+    "Resource": {
+      "type": "object",
+      "title": "Task",
+      "properties": {
+        "productVariantId": {
+          "type": "string",
+          "title": "Product Variant ID"
+        },
+        "quantity": {
+          "type": "number",
+          "title": "Quantity of Product delivered"
+        },
+        "isDelivered": {
+          "type": "boolean",
+          "title": "Delivery status"
+        },
+        "deliveryComment": {
+          "type": "string",
+          "title": "Delivery Comment"
+        }
+      }
+    },
+    "Address": {
+      "type": "object",
+      "title": "Address",
+      "properties": {
+        "latitude": {
+          "type": "number",
+          "title": "Latitude of the Household"
+        },
+        "longitude": {
+          "type": "number",
+          "title": "Longitude of the household"
+        },
+        "locationAccuracy": {
+          "type": "number",
+          "title": "Location Accuracy"
+        },
+        "localityCode": {
+          "type": "string",
+          "title": "Boundary Code of the Locality"
+        }
+      }
+    },
+    "Name": {
+      "type": "object",
+      "title": "Name of the person",
+      "properties": {
+        "givenName": {
+          "type": "string",
+          "title": "Given Name"
+        },
+        "familyName": {
+          "type": "string",
+          "title": "Family Name"
+        },
+        "otherName": {
+          "type": "string",
+          "title": "Other Name"
+        }
+      }
+    },
+    "Identifier": {
+      "type": "object",
+      "title": "Identity Document",
+      "properties": {
+        "identifierId": {
+          "type": "string",
+          "title": "Identifier ID"
+        },
+        "identifierType": {
+          "type": "string",
+          "title": "Identifier Type"
+        }
+      }
+    }
+  }
+}

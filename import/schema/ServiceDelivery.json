@@ -1,0 +1,148 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "type": "object",
+  "properties": {
+    "ServiceDelivery": {
+      "$ref": "#/definitions/ServiceDelivery"
+    }
+  },
+  "required": [
+    "ServiceDelivery"
+  ],
+  "title": "ServiceDelivery",
+  "definitions": {
+    "ServiceDelivery": {
+      "$id": "#/properties/ServiceDelivery",
+      "type": "object",
+      "title": "The Service Delivery Schema",
+      "required": [
+        "serviceDeliveryId",
+        "tenantId",
+        "household",
+        "headOfHousehold",
+        "projectId",
+        "registrationDate",
+        "resources",
+        "deliveredBy",
+        "deliveryDate"
+      ],
+      "properties": {
+        "serviceDeliveryId": {
+          "type": "string",
+          "title": "Task ID"
+        },
+        "tenantId": {
+          "type": "string",
+          "title": "Tenant Identifier"
+        },
+        "household": {
+          "$ref": "Common.json/#/definitions/Household"
+        },
+        "headOfHousehold": {
+          "$ref": "Common.json/#/definitions/Individual"
+        },
+        "projectId": {
+          "type": "string",
+          "title": "Project Identifier - Campaign ID"
+        },
+        "registrationDate": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Date time of Registration in UTC"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "Common.json/#/definitions/Resource"
+          }
+        },
+        "deliveredBy": {
+          "type": "string",
+          "title": "Identifier of the User performing delivery"
+        },
+        "deliveryDate": {
+          "type": "string",
+          "format": "date-time",
+          "title": "Date Time of Delivery event in UTC"
+        }
+      }
+    }
+  },
+  "_osConfig": {
+    "internalFields": [
+      "$._osSignedData"
+    ],
+    "enableSearch": "false",
+    "indexFields": ["serviceDeliveryId"],
+    "uniqueIndexFields": ["serviceDeliveryId"],
+    "systemFields": [
+      "osCreatedAt",
+      "osUpdatedAt",
+      "osCreatedBy",
+      "osUpdatedBy"
+    ],
+    "credentialTemplate": {
+      "@context": [
+        "https://www.w3.org/2018/credentials/v1",
+        "https://raw.githubusercontent.com/Sunbird-RC/demo-donor-registry/main/contexts/vc-context.json"
+      ],
+      "type": [
+        "VerifiableCredential",
+        "DIGITServiceDeliveryEvent"
+      ],
+      "id": "https://digit.org/servicedelivery/{{osid}}",
+      "issuer": "https://digit.org",
+      "issuanceDate": "{{formatTime osUpdatedAt}}",
+      "credentialSubject": {
+        "type": "Person",
+        "id": "did:abha:{{identificationDetails.abha}}",
+        "nottoId": "{{identificationDetails.nottoId}}",
+        "name": "{{personalDetails.firstName}} {{personalDetails.middleName}} {{personalDetails.lastName}}",
+        "dob": "{{personalDetails.dob}}",
+        "gender": "{{personalDetails.gender}}",
+        "fatherName": "{{personalDetails.fatherName}}",
+        "bloodGroup": "{{personalDetails.bloodGroup}}",
+        "pledge": {
+          "type": "OrganPledge",
+          "organs": "{{#each pledgeDetails.organs}}{{#if @index}}, {{/if}}{{this}}{{/each}}",
+          "tissues": "{{#each pledgeDetails.tissues}}{{#if @index}}, {{/if}}{{this}}{{/each}}",
+          "additionalOrgans": "{{pledgeDetails.other}}"
+        },
+        "emergency": {
+          "type": "Emergency",
+          "name": "{{emergencyDetails.name}}",
+          "otherRelation": "{{emergencyDetails.otherRelation}}",
+          "relation": "{{emergencyDetails.relation}}"
+        },
+        "address": {
+          "addressLine1": "{{addressDetails.addressLine1}}",
+          "addressLine2": "{{addressDetails.addressLine2}}",
+          "district": "{{addressDetails.district}}",
+          "state": "{{addressDetails.state}}",
+          "country": "{{addressDetails.country}}",
+          "pincode": "{{addressDetails.pincode}}"
+        }
+      },
+      "evidence": [
+        {
+          "type": [
+            "eKYC"
+          ],
+          "verifier": "https://healthidsbx.abdm.gov.in/",
+          "evidenceDocument": "ABHA",
+          "subjectPresence": "online",
+          "refId": "{{identificationDetails.abha}}"
+        }
+      ],
+      "nonTransferable": "true"
+    },
+    "inviteRoles": [
+      "anonymous"
+    ],
+    "roles": [
+      "anonymous"
+    ],
+    "ownershipAttributes": [],
+    "certificateTemplates": {}
+  }
+}
