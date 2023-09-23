@@ -103,10 +103,7 @@
         "registrationDate": "{{registrationDate}}",
         "deliveryDate": "{{deliveryDate}}",
         "deliveredBy": "{{deliveredBy}}",
-        "tasks": {
-          "type": "Resources",
-          "resources": "{{#each resources}}{{#if @index}}, {{/if}}{{this.quantity}} items of {{this.productVariantId}} delivered{{/each}}"
-        }
+        "tasks": "{{#each resources}}{{#if @index}}, {{/if}}{{this.quantity}} items of {{this.productVariantId}} delivered{{/each}}"
       }
     },
     "inviteRoles": [
