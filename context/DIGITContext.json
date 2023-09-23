@@ -6,7 +6,7 @@
     "type": "@type",
     "schema": "https://schema.org/",
     "DIGITServiceDeliveryEvent": {
-      "@id": "digit:DIGITServiceDeliveryEvent",
+      "@id": "schema:DIGITServiceDeliveryEvent",
       "@context": {
         "id": "@id",
         "@version": 1.1,
@@ -14,7 +14,7 @@
       }
     },
     "ServiceDeliveryEvent": {
-      "@id": "digit:ServiceDeliveryEvent",
+      "@id": "schema:ServiceDeliveryEvent",
       "@context": {
         "@version": 1.1,
         "@protected": true,
