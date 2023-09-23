@@ -25,15 +25,12 @@
         "projectId": "schema:Text",
         "registrationDate": "schema:Text",
         "deliveryDate": "schema:Text",
-        "deliveredBy": "schema:Text",
-        "tasks": "digit:Resources"
+        "deliveredBy": "schema:Text"
       }
     },
     "Resources": {
       "@id": "digit:Resources",
       "@context": {
-        "@version": 1.1,
-        "@protected": true,
         "resources": "schema:Text"
       }
     }
