@@ -13,8 +13,8 @@
         "@protected": true
       }
     },
-    "ServiceDeliveryEvent": {
-      "@id": "schema:ServiceDeliveryEvent",
+    "ServiceDelivery": {
+      "@id": "schema:ServiceDelivery",
       "@context": {
         "@version": 1.1,
         "@protected": true,
