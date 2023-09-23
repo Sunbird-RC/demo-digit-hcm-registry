@@ -7,7 +7,7 @@
     "schema": "https://schema.org/",
     "tasks": "https://raw.githubusercontent.com/Sunbird-RC/demo-digit-hcm-registry/main/context/DIGITContext.json",
     "DIGITServiceDeliveryEvent": {
-      "@id": "digit:DIGITServiceDeliveryEvent",
+      "@id": "schema:DIGITServiceDeliveryEvent",
       "@context": {
         "id": "@id",
         "@version": 1.1,
@@ -15,7 +15,7 @@
       }
     },
     "ServiceDeliveryEvent": {
-      "@id": "digit:ServiceDeliveryEvent",
+      "@id": "schema:ServiceDeliveryEvent",
       "@context": {
         "@version": 1.1,
         "@protected": true,
