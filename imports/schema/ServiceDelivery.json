@@ -94,7 +94,7 @@
       "issuer": "https://digit.org",
       "issuanceDate": "{{osUpdatedAt}}",
       "credentialSubject": {
-        "type": "ServiceDelivery",
+        "type": "ServiceDeliveryEvent",
         "id": "did:digit/servicedelivery/{{serviceDeliveryId}}",
         "householdId": "{{household.householdId}}",
         "headOfHouseholdId": "{{headOfHousehold.individualId}}",
@@ -103,7 +103,10 @@
         "registrationDate": "{{registrationDate}}",
         "deliveryDate": "{{deliveryDate}}",
         "deliveredBy": "{{deliveredBy}}",
-        "tasks": "{{#each resources}}{{#if @index}}, {{/if}}{{this.quantity}} items of {{this.productVariantId}} delivered{{/each}}"
+        "tasks": {
+          "type": "Resources",
+          "resources": "{{#each resources}}{{#if @index}}, {{/if}}{{this.quantity}} items of {{this.productVariantId}} delivered{{/each}}"
+        }
       }
     },
     "inviteRoles": [

@@ -5,6 +5,7 @@
     "id": "@id",
     "type": "@type",
     "schema": "https://schema.org/",
+    "tasks": "https://raw.githubusercontent.com/Sunbird-RC/demo-digit-hcm-registry/main/context/DIGITContext.json",
     "DIGITServiceDeliveryEvent": {
       "@id": "schema:DIGITServiceDeliveryEvent",
       "@context": {
@@ -13,8 +14,8 @@
         "@protected": true
       }
     },
-    "ServiceDelivery": {
-      "@id": "schema:ServiceDelivery",
+    "ServiceDeliveryEvent": {
+      "@id": "digit:ServiceDeliveryEvent",
       "@context": {
         "@version": 1.1,
         "@protected": true,
@@ -24,8 +25,13 @@
         "projectId": "schema:Text",
         "registrationDate": "schema:Text",
         "deliveryDate": "schema:Text",
-        "deliveredBy": "schema:Text",
-        "tasks": "schema:Text"
+        "deliveredBy": "schema:Text"
+      }
+    },
+    "Resources": {
+      "@id": "digit:Resources",
+      "@context": {
+        "resources": "schema:Text"
       }
     }
   }
