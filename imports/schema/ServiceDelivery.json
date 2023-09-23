@@ -94,7 +94,7 @@
       "issuer": "https://digit.org",
       "issuanceDate": "{{osUpdatedAt}}",
       "credentialSubject": {
-        "type": "ServiceDeliveryEvent",
+        "type": "ServiceDelivery",
         "id": "did:digit/servicedelivery/{{serviceDeliveryId}}",
         "householdId": "{{household.householdId}}",
         "headOfHouseholdId": "{{headOfHousehold.individualId}}",
