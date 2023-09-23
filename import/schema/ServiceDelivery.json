@@ -84,7 +84,7 @@
     "credentialTemplate": {
       "@context": [
         "https://www.w3.org/2018/credentials/v1",
-        "https://raw.githubusercontent.com/Sunbird-RC/demo-donor-registry/main/contexts/vc-context.json"
+        "https://raw.githubusercontent.com/Sunbird-RC/demo-digit-hcm-registry/main/context/DIGITContext.json"
       ],
       "type": [
         "VerifiableCredential",
@@ -94,47 +94,20 @@
       "issuer": "https://digit.org",
       "issuanceDate": "{{formatTime osUpdatedAt}}",
       "credentialSubject": {
-        "type": "Person",
-        "id": "did:abha:{{identificationDetails.abha}}",
-        "nottoId": "{{identificationDetails.nottoId}}",
-        "name": "{{personalDetails.firstName}} {{personalDetails.middleName}} {{personalDetails.lastName}}",
-        "dob": "{{personalDetails.dob}}",
-        "gender": "{{personalDetails.gender}}",
-        "fatherName": "{{personalDetails.fatherName}}",
-        "bloodGroup": "{{personalDetails.bloodGroup}}",
-        "pledge": {
-          "type": "OrganPledge",
-          "organs": "{{#each pledgeDetails.organs}}{{#if @index}}, {{/if}}{{this}}{{/each}}",
-          "tissues": "{{#each pledgeDetails.tissues}}{{#if @index}}, {{/if}}{{this}}{{/each}}",
-          "additionalOrgans": "{{pledgeDetails.other}}"
-        },
-        "emergency": {
-          "type": "Emergency",
-          "name": "{{emergencyDetails.name}}",
-          "otherRelation": "{{emergencyDetails.otherRelation}}",
-          "relation": "{{emergencyDetails.relation}}"
-        },
-        "address": {
-          "addressLine1": "{{addressDetails.addressLine1}}",
-          "addressLine2": "{{addressDetails.addressLine2}}",
-          "district": "{{addressDetails.district}}",
-          "state": "{{addressDetails.state}}",
-          "country": "{{addressDetails.country}}",
-          "pincode": "{{addressDetails.pincode}}"
+        "type": "ServiceDeliveryEvent",
+        "id": "did:digit/servicedelivery/{{serviceDeliveryId}}",
+        "householdId": "{{household.householdId}}",
+        "headOfHouseholdId": "{{headOfHousehold.individualId}}",
+        "tenantId": "{{tenantId}}",
+        "projectId": "{{projectId}}",
+        "registrationDate": "{{registrationDate}}",
+        "deliveryDate": "{{deliveryDate}}",
+        "deliveredBy": "{{deliveredBy}}",
+        "resources": {
+          "type": "Resource",
+          "resource": "{{#each resources}}{{#if @index}}, {{/if}}{{this.quantity}} items of {{this.productVariantId}} delivered{{/each}}"
         }
-      },
-      "evidence": [
-        {
-          "type": [
-            "eKYC"
-          ],
-          "verifier": "https://healthidsbx.abdm.gov.in/",
-          "evidenceDocument": "ABHA",
-          "subjectPresence": "online",
-          "refId": "{{identificationDetails.abha}}"
-        }
-      ],
-      "nonTransferable": "true"
+      }
     },
     "inviteRoles": [
       "anonymous"
