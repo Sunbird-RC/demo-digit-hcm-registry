@@ -25,7 +25,8 @@
         "projectId": "schema:Text",
         "registrationDate": "schema:Text",
         "deliveryDate": "schema:Text",
-        "deliveredBy": "schema:Text"
+        "deliveredBy": "schema:Text",
+        "tasks": "digit:Resources"
       }
     },
     "Resources": {
