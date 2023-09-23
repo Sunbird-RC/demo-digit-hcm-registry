@@ -92,7 +92,7 @@
       ],
       "id": "https://digit.org/servicedelivery/{{osid}}",
       "issuer": "https://digit.org",
-      "issuanceDate": "{{formatTime osUpdatedAt}}",
+      "issuanceDate": "{{osUpdatedAt}}",
       "credentialSubject": {
         "type": "ServiceDeliveryEvent",
         "id": "did:digit/servicedelivery/{{serviceDeliveryId}}",
@@ -103,9 +103,9 @@
         "registrationDate": "{{registrationDate}}",
         "deliveryDate": "{{deliveryDate}}",
         "deliveredBy": "{{deliveredBy}}",
-        "resources": {
-          "type": "Resource",
-          "resource": "{{#each resources}}{{#if @index}}, {{/if}}{{this.quantity}} items of {{this.productVariantId}} delivered{{/each}}"
+        "tasks": {
+          "type": "Resources",
+          "resources": "{{#each resources}}{{#if @index}}, {{/if}}{{this.quantity}} items of {{this.productVariantId}} delivered{{/each}}"
         }
       }
     },
