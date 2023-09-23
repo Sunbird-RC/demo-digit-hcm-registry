@@ -26,6 +26,7 @@
         "registrationDate": "schema:Text",
         "deliveryDate": "schema:Text",
         "deliveredBy": "schema:Text",
+        "tasks": "digit:Resources"
       }
     },
     "Resources": {
