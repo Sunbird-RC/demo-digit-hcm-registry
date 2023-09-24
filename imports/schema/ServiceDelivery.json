@@ -96,6 +96,7 @@
         "id": "did:digit/servicedelivery/{{serviceDeliveryId}}",
         "householdId": "{{household.householdId}}",
         "headOfHouseholdId": "{{headOfHousehold.individualId}}",
+        "headOfHouseholdName": "{{headOfHousehold.name.familyName}}, {{headOfHousehold.name.givenName}}",
         "tenantId": "{{tenantId}}",
         "projectId": "{{projectId}}",
         "registrationDate": "{{registrationDate}}",
