@@ -19,6 +19,7 @@
         "@version": 1.1,
         "@protected": true,
         "householdId": "schema:Text",
+        "serviceDeliveryId": "schema:Text",
         "headOfHouseholdId": "schema:Text",
         "headOfHouseholdName": "schema:Text",
         "tenantId": "schema:Text",

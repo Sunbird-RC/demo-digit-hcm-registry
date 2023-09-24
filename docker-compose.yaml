@@ -133,7 +133,7 @@ services:
     image: ghcr.io/sunbird-rc/sunbird-rc-certificate-api:${RELEASE_VERSION}
     environment:
       - PORT=8078
-      - QR_TYPE=URL-W3C-VC
+      - QR_TYPE=W3C-VC
     ports:
       - "8078:8078"
     healthcheck:

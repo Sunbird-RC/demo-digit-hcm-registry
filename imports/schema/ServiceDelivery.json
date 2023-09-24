@@ -94,6 +94,7 @@
       "credentialSubject": {
         "type": "ServiceDelivery",
         "id": "did:digit/servicedelivery/{{serviceDeliveryId}}",
+        "serviceDeliveryId": "{{serviceDeliveryId}}",
         "householdId": "{{household.householdId}}",
         "headOfHouseholdId": "{{headOfHousehold.individualId}}",
         "headOfHouseholdName": "{{headOfHousehold.name.familyName}}, {{headOfHousehold.name.givenName}}",
