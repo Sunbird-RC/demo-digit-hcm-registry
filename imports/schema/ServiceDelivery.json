@@ -111,6 +111,8 @@
       "anonymous"
     ],
     "ownershipAttributes": [],
-    "certificateTemplates": {}
+    "certificateTemplates": {
+      "html": "https://raw.githubusercontent.com/Sunbird-RC/demo-digit-hcm-registry/main/imports/schema/templates/ServiceDelivery.html"
+    }
   }
 }
