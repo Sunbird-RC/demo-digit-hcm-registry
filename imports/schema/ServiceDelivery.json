@@ -69,10 +69,8 @@
     }
   },
   "_osConfig": {
-    "internalFields": [
-      "$._osSignedData"
-    ],
-    "enableSearch": "false",
+    "enableSearch": "true",
+    "enableLogin": "false",
     "indexFields": ["serviceDeliveryId"],
     "uniqueIndexFields": ["serviceDeliveryId"],
     "systemFields": [
