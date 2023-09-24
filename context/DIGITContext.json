@@ -20,6 +20,7 @@
         "@protected": true,
         "householdId": "schema:Text",
         "headOfHouseholdId": "schema:Text",
+        "headOfHouseholdName": "schema:Text",
         "tenantId": "schema:Text",
         "projectId": "schema:Text",
         "registrationDate": "schema:Text",
