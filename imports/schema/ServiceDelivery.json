@@ -15,7 +15,7 @@
       "$id": "#/properties/ServiceDelivery",
       "type": "object",
       "title": "The Service Delivery Schema",
-      "required": ["serviceDeliveryId", "beneficiary", "resources"],
+      "required": ["serviceDeliveryId", "beneficiary", "benefitsDelivered"],
       "properties": {
         "serviceDeliveryId": {
           "type": "string",
