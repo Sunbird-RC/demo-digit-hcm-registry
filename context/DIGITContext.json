@@ -20,7 +20,7 @@
         "@version": 1.1,
         "@protected": true,
         "benefits": "schema:ItemList",
-        "serviceDelieveryId": "schema:Text",
+        "serviceDeliveryId": "schema:Text",
         "beneficiaryId": "schema:Text",
         "beneficiaryType": "schema:Text",
         "projectId": "schema:Text",
