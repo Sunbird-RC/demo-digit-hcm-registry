@@ -15,55 +15,20 @@
       "$id": "#/properties/ServiceDelivery",
       "type": "object",
       "title": "The Service Delivery Schema",
-      "required": [
-        "serviceDeliveryId",
-        "tenantId",
-        "household",
-        "headOfHousehold",
-        "projectId",
-        "registrationDate",
-        "resources",
-        "deliveredBy",
-        "deliveryDate"
-      ],
+      "required": ["serviceDeliveryId", "beneficiary", "resources"],
       "properties": {
         "serviceDeliveryId": {
           "type": "string",
           "title": "Task ID"
         },
-        "tenantId": {
-          "type": "string",
-          "title": "Tenant Identifier"
+        "beneficiary": {
+          "$ref": "Common.json/#/definitions/Beneficiary"
         },
-        "household": {
-          "$ref": "Common.json/#/definitions/Household"
-        },
-        "headOfHousehold": {
-          "$ref": "Common.json/#/definitions/Individual"
-        },
-        "projectId": {
-          "type": "string",
-          "title": "Project Identifier - Campaign ID"
-        },
-        "registrationDate": {
-          "type": "string",
-          "format": "date-time",
-          "title": "Date time of Registration in UTC"
-        },
-        "resources": {
+        "benefitsDelivered": {
           "type": "array",
           "items": {
             "$ref": "Common.json/#/definitions/Resource"
           }
-        },
-        "deliveredBy": {
-          "type": "string",
-          "title": "Identifier of the User performing delivery"
-        },
-        "deliveryDate": {
-          "type": "string",
-          "format": "date-time",
-          "title": "Date Time of Delivery event in UTC"
         }
       }
     }
@@ -95,15 +60,12 @@
         "type": "ServiceDelivery",
         "id": "did:digit/servicedelivery/{{serviceDeliveryId}}",
         "serviceDeliveryId": "{{serviceDeliveryId}}",
-        "householdId": "{{household.householdId}}",
-        "headOfHouseholdId": "{{headOfHousehold.individualId}}",
-        "headOfHouseholdName": "{{headOfHousehold.name.familyName}}, {{headOfHousehold.name.givenName}}",
-        "tenantId": "{{tenantId}}",
-        "projectId": "{{projectId}}",
-        "registrationDate": "{{registrationDate}}",
-        "deliveryDate": "{{deliveryDate}}",
-        "deliveredBy": "{{deliveredBy}}",
-        "tasks": "{{#each resources}}{{#if @index}}, {{/if}}{{this.quantity}} items of {{this.productVariantId}} delivered{{/each}}"
+        "beneficiaryId": "{{beneficiary.beneficiaryId}}",
+        "beneficiaryType": "{{beneficiary.beneficiaryType}}",
+        "tenantId": "{{beneficiary.tenantId}}",
+        "projectId": "{{beneficiary.projectId}}",
+        "registrationDate": "{{beneficiary.registrationDate}}",
+        "benefits": "{{benefitsDelivered}}"
       }
     },
     "inviteRoles": [

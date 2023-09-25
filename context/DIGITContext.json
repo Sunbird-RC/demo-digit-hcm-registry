@@ -5,8 +5,9 @@
     "id": "@id",
     "type": "@type",
     "schema": "https://schema.org/",
+    "digit": "",
     "DIGITServiceDeliveryEvent": {
-      "@id": "schema:DIGITServiceDeliveryEvent",
+      "@id": "digit:DIGITServiceDeliveryEvent",
       "@context": {
         "id": "@id",
         "@version": 1.1,
@@ -14,20 +15,17 @@
       }
     },
     "ServiceDelivery": {
-      "@id": "schema:ServiceDelivery",
+      "@id": "digit:ServiceDelivery",
       "@context": {
         "@version": 1.1,
         "@protected": true,
-        "householdId": "schema:Text",
-        "serviceDeliveryId": "schema:Text",
-        "headOfHouseholdId": "schema:Text",
-        "headOfHouseholdName": "schema:Text",
-        "tenantId": "schema:Text",
+        "benefits": "schema:ItemList",
+        "serviceDelieveryId": "schema:Text",
+        "beneficiaryId": "schema:Text",
+        "beneficiaryType": "schema:Text",
         "projectId": "schema:Text",
-        "registrationDate": "schema:Text",
-        "deliveryDate": "schema:Text",
-        "deliveredBy": "schema:Text",
-        "tasks": "schema:Text"
+        "tenantId": "schema:Text",
+        "registrationDate": "schema:Text"
       }
     }
   }

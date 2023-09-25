@@ -57,6 +57,33 @@
         }
       }
     },
+    "Beneficiary": {
+      "type": "object",
+      "title": "Beneficiary",
+      "properties": {
+        "beneficiaryId": {
+          "type": "string",
+          "title": "Beneficiary Identifier"
+        },
+        "beneficiaryType": {
+          "type": "string",
+          "enum": ["HOUSEHOLD", "INDIVIDUAL"]
+        },
+        "projectId": {
+          "type": "string",
+          "title": "Project associated with Benefit"
+        },
+        "tenantId": {
+          "type": "string",
+          "title": "tenant associated with the project"
+        },
+        "registrationDate": {
+          "type": "string",
+          "format": "date-time"
+        }
+
+      }
+    },
     "Resource": {
       "type": "object",
       "title": "Task",
@@ -76,6 +103,14 @@
         "deliveryComment": {
           "type": "string",
           "title": "Delivery Comment"
+        },
+        "deliveryDate": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "deliveredBy": {
+          "type": "string",
+          "title": "Benefit delivered By"
         }
       }
     },
