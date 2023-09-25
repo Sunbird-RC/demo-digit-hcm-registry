@@ -8,7 +8,7 @@
     display: flex;
     flex-direction: revert;
     justify-content: space-between;
-    height: calc(100% - 3em);
+    height: 50vh;
     padding: 1em;
 ">
         <div style="
@@ -26,25 +26,14 @@
                 <span style="font-size: 14px;font-weight: bold;font-family: Lato;white-space: pre;letter-spacing: 0px;">{{credentialSubject.serviceDeliveryId}}</span>
             </div>
             <div style="display: flex; flex-direction: column">
-                <span style="color: #8D9091;font-size: 12px;font-family: Lato;white-space: pre;letter-spacing: 0px;">Household Identifier</span>
-                <span style="font-size: 14px;font-weight: bold;font-family: Lato;white-space: pre;letter-spacing: 0px;">{{credentialSubject.householdId}}</span>
+                <span style="color: #8D9091;font-size: 12px;font-family: Lato;white-space: pre;letter-spacing: 0px;">Beneficiary Identifier</span>
+                <span style="font-size: 14px;font-weight: bold;font-family: Lato;white-space: pre;letter-spacing: 0px;">{{credentialSubject.beneficiaryType}}: {{credentialSubject.beneficiaryId}}</span>
             </div>
             <div style="display: flex; flex-direction: column">
-                <span style="color: #8D9091;font-size: 12px;font-family: Lato;white-space: pre;letter-spacing: 0px;">Head of Household</span>
-                <span style="font-size: 14px;font-weight: bold;font-family: Lato;white-space: pre;letter-spacing: 0px;">{{credentialSubject.headOfHouseholdName}}</span>
-            </div>
-            <div style="display: flex; flex-direction: column">
-                <span style="color: #8D9091;font-size: 12px;font-family: Lato;white-space: pre;letter-spacing: 0px;">Resource Delivered</span>
-                <span style="font-size: 14px;font-weight: bold;font-family: Lato;white-space: pre;letter-spacing: 0px;">{{credentialSubject.tasks}}</span>
-            </div>
-            <div style="display: flex; flex-direction: column">
-                <span style="color: #8D9091;font-size: 12px;font-family: Lato;white-space: pre;letter-spacing: 0px;">Delivery Date</span>
-                <span style="font-size: 14px;font-weight: bold;font-family: Lato;white-space: pre;letter-spacing: 0px;">{{credentialSubject.deliveryDate}}%</span>
-            </div>
-            <div style="display: flex; flex-direction: column; justify-content: space-between">
                 <span style="color: #8D9091;font-size: 12px;font-family: Lato;white-space: pre;letter-spacing: 0px;">Registration Date</span>
                 <span style="font-size: 14px;font-weight: bold;font-family: Lato;white-space: pre;letter-spacing: 0px;">{{credentialSubject.registrationDate}}</span>
             </div>
+
         </div>
         <div style="
     display: flex;
@@ -78,6 +67,52 @@
                 </defs>
             </svg>
         </div>
+    </div>
+    <div style="display: flex; flex-direction: column;margin-top: 20px;padding:5px;">
+        <span style="color: #8D9091;font-size: 12px;font-family: Lato;white-space: pre;letter-spacing: 0px;">Benefits Delivered</span>
+        <table>
+            <tr>
+                <td>
+                    Product Variant Id
+                </td>
+                <td>
+                    Quantity
+                </td>
+                <td>
+                    Delivery Status
+                </td>
+                <td>
+                    Delivery Date
+                </td>
+                <td>
+                    Delivered By
+                </td>
+            </tr>
+            {{#each credentialSubject.benefits}}
+            <tr>
+                <td>
+                    {{this.productVariantId}}
+                </td>
+                <td>
+                    {{this.quantity}}
+                </td>
+                <td>
+                    {{#if @isDelievered == true}}
+                    Delivered
+                    {{/if}}
+                    {{#else}}
+                    Undelivered
+                    {{/else}}
+                </td>
+                <td>
+                    {{this.deliveryDate}}
+                </td>
+                <td>
+                    {{this.deliveredBy}}
+                </td>
+            </tr>
+            {{/each}}
+        </table>
     </div>
 </div>
 
