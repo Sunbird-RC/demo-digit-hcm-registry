@@ -23,12 +23,14 @@ public class VcServiceDeliveryRowMapper implements RowMapper<VcServiceDelivery> 
         vcServiceDelivery.setServiceTaskId(rs.getString("serviceTaskId"));
         vcServiceDelivery.setBeneficiaryId(rs.getString("beneficiaryId"));
         vcServiceDelivery.setDistributedBy(rs.getString("distributedBy"));
-
         // Assuming you have a custom method to map the audit details using Jackson
         // Here's a hypothetical method named mapAuditDetails
-        AuditDetails auditDetails = mapAuditDetails(rs.getString("auditDetails"));
+        AuditDetails auditDetails = new AuditDetails();
+        auditDetails.setCreatedBy(rs.getString("createdBy"));
+        auditDetails.setCreatedTime(rs.getLong("createdTime"));
+        auditDetails.setLastModifiedBy(rs.getString("lastModifiedBy"));
+        auditDetails.setLastModifiedTime(rs.getLong("lastModifiedTime"));
         vcServiceDelivery.setAuditDetails(auditDetails);
-
         return vcServiceDelivery;
     }
 

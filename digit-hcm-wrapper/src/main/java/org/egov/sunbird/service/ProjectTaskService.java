@@ -1,7 +1,8 @@
 package org.egov.sunbird.service;
+import java.text.SimpleDateFormat;
 
-import ch.qos.logback.core.encoder.EchoEncoder;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.common.protocol.types.Field;
 import org.egov.common.http.client.ServiceRequestClient;
 import org.egov.common.models.household.Household;
 import org.egov.common.models.household.HouseholdMember;
@@ -10,7 +11,7 @@ import org.egov.common.models.individual.Individual;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import org.egov.common.models.project.BeneficiaryBulkResponse;
+
 import org.egov.common.models.project.ProjectBeneficiary;
 import org.egov.common.models.project.Task;
 import org.egov.common.models.project.TaskResource;
@@ -52,7 +53,6 @@ public class ProjectTaskService {
     private final HouseholdService householdService;
     private final IndividualService individualService;
     private final ProjectService projectService;
-
 
 
     @Autowired
@@ -126,18 +126,20 @@ public class ProjectTaskService {
                         INDIVIDUAL_FETCH_ERROR_MESSAGE + householdHeadMember.getIndividualClientReferenceId());
             }
 
-            RegistryRequest reqToCreateVC = registryRequestTransformer(task.getResources(), projectBeneficiary,task.getId());
+//            RegistryRequest reqToCreateVC = registryRequestTransformer(task.getResources(), projectBeneficiary,task.getId());
 
+            VerifiableCredentialDTO reqToCreateVC = registryRequestULPTransformer(task.getResources(), projectBeneficiary,task.getId());
 
             if (isCreate) {
 
                     StringBuilder uri = new StringBuilder();
-                    uri.append(properties.getRegistryHost()).append(properties.getRegistryURL());
-                    RegistryResponse response = null;
+//                    uri.append(properties.getRegistryHost()).append(properties.getRegistryURL());
+                    uri.append(properties.getRegistryULPHost()).append(properties.getRegistryULPCredentialIssueURL());
+                    VerifiableCredentialResponseDTO response = null;
                     try {
                         response = serviceRequestClient.fetchResult(uri,
                                 reqToCreateVC,
-                                RegistryResponse.class);
+                                VerifiableCredentialResponseDTO.class);
                     } catch (Exception exception) {
                         log.error("error occurred while creating a VC using the Registry service: {}", exception.getMessage());
                         throw new CustomException(REGISTRY_VC_CREATION_ERROR,
@@ -148,7 +150,7 @@ public class ProjectTaskService {
                         VcServiceDelivery auditDetailsToAddInDB = VcServiceDelivery.builder()
                                 .id(UUID.randomUUID().toString())
                                 .serviceTaskId(task.getId())
-                                .certificateId(response.getResult().getServiceDelivery().getOsid())
+                                .certificateId(response.getCredential().getId())
                                 .distributedBy(emptyIfNull(task.getCreatedBy()))
                                 .beneficiaryId(emptyIfNull(task.getProjectBeneficiaryId()))
                                 .auditDetails(task.getAuditDetails())
@@ -184,6 +186,19 @@ public class ProjectTaskService {
         return iso8601DateTime;
     }
 
+    public static String convertTimestampToReadableDate(long timestamp) {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd MMM yyyy HH:mm:ss", Locale.US);
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Kolkata")); // Set the time zone to Indian Standard Time (IST)
+
+        // Create a Date object from the timestamp
+        Date date = new Date(timestamp);
+
+        // Format the date as a string
+        String formattedDateTime = sdf.format(date);
+
+        return formattedDateTime;
+    }
+
     public static String emptyIfNull(String input) {
     if (input == null) {
         return "";
@@ -198,10 +213,10 @@ public class ProjectTaskService {
 
             ResourceDTO resourceToSend = ResourceDTO.builder()
                     .productVariantId(emptyIfNull(resource.getProductVariantId()))
-                    .quantity(Integer.parseInt(resource.getQuantity().toString() != null ? resource.getQuantity().toString() : "0"))
+                    .quantity(resource.getQuantity().toString() != null ? resource.getQuantity().toString() : "0")
                     .isDelivered(resource.getIsDelivered() ? true : false)
                     .deliveryComment(emptyIfNull(resource.getDeliveryComment()))
-                    .deliveryDate(convertToISO8601(resource.getAuditDetails().getCreatedTime()))
+                    .deliveryDate(convertTimestampToReadableDate(resource.getAuditDetails().getCreatedTime()))
                     .deliveredBy(emptyIfNull(resource.getAuditDetails().getCreatedBy())).build();
             benefitsDelivered.add(resourceToSend);
         }
@@ -210,10 +225,66 @@ public class ProjectTaskService {
                 .beneficiaryType("HOUSEHOLD")
                 .projectId(emptyIfNull(projectBeneficiary.getId()))
                 .tenantId(emptyIfNull(projectBeneficiary.getTenantId()))
-                .registrationDate(convertToISO8601(projectBeneficiary.getDateOfRegistration()))
+                .registrationDate(convertTimestampToReadableDate(projectBeneficiary.getDateOfRegistration()))
                 .build();
 
         return new RegistryRequest(serviceDeliveryId, benificiaryDTO, benefitsDelivered);
+    }
+
+    public VerifiableCredentialDTO registryRequestULPTransformer(List<TaskResource> resources, ProjectBeneficiary projectBeneficiary, String serviceDeliveryId) {
+        List<String> tags = new ArrayList<String>() ;
+        tags.add("hcm"); tags.add("digit");
+        List<String> type = new ArrayList<String>() ;
+        type.add("VerifiableCredential"); type.add("ServiceDelivery");
+        List<String> context = new ArrayList<String>() ;
+        context.add("https://www.w3.org/2018/credentials/v1"); context.add("https://www.w3.org/2018/credentials/examples/v1");
+        List<ResourceDTO> benefitsDelivered = new ArrayList<ResourceDTO>() ;
+        for (TaskResource resource : resources) {
+
+            ResourceDTO resourceToSend = ResourceDTO.builder()
+                    .productVariantId(emptyIfNull(resource.getProductVariantId()))
+                    .quantity(resource.getQuantity().toString() != null ? resource.getQuantity().toString() : "0")
+                    .isDelivered(resource.getIsDelivered() ? true : false)
+                    .deliveryComment(emptyIfNull(resource.getDeliveryComment()))
+                    .deliveryDate(convertTimestampToReadableDate(resource.getAuditDetails().getCreatedTime()))
+                    .deliveredBy(emptyIfNull(resource.getAuditDetails().getCreatedBy())).build();
+            benefitsDelivered.add(resourceToSend);
+        }
+        BenificiaryDTO benificiaryDTO = BenificiaryDTO.builder()
+                .beneficiaryId(emptyIfNull(projectBeneficiary.getId()))
+                .beneficiaryType("HOUSEHOLD")
+                .projectId(emptyIfNull(projectBeneficiary.getId()))
+                .tenantId(emptyIfNull(projectBeneficiary.getTenantId()))
+                .registrationDate(convertTimestampToReadableDate(projectBeneficiary.getDateOfRegistration()))
+                .build();
+
+
+        VerifiableCredentialDTO reqToReturn = VerifiableCredentialDTO.builder()
+                .tags(tags)
+                .credentialSchemaVersion(properties.getRegistryULPSchemaVersion())
+                .credentialSchemaId(properties.getRegistryULPSchemaId())
+                .method("VC")
+                .credential(VerifiableCredentialDTO.Credential.builder()
+                        .type(type)
+                        .context(context)
+                        .issuer(properties.getRegistryULPIssuerId())
+                        .issuanceDate("2023-02-06T11:56:27.259Z")
+                        .expirationDate("2023-02-08T11:56:27.259Z")
+                        .options(VerifiableCredentialDTO.Options.builder()
+                                .created("2020-04-02T18:48:36Z")
+                                .credentialStatus(VerifiableCredentialDTO.CredentialStatus.builder()
+                                        .type("RevocationList2020Status")
+                                        .build())
+                                .build())
+                        .credentialSubject(VerifiableCredentialDTO.CredentialSubject.builder()
+                                .id("")
+                                .serviceDeliveryId(serviceDeliveryId)
+                                .beneficiary(benificiaryDTO)
+                                .benefitsDelivered(benefitsDelivered)
+                                .build())
+                        .build())
+                .build();
+        return reqToReturn;
     }
 
     private void setIndividuals(List<String> individualClientReferenceIds,
@@ -259,5 +330,11 @@ public class ProjectTaskService {
             projectBeneficiaryClientReferenceIds.add(projectBeneficiary.getBeneficiaryClientReferenceId());
             projectBeneficiaryMap.put(projectBeneficiary.getClientReferenceId(), projectBeneficiary);
         }
+    }
+
+    public List<VcServiceDelivery> findByServiceTaskId(String serviceTaskId) {
+        List<String> serviceDeliveryId = new ArrayList<>();
+        serviceDeliveryId.add(serviceTaskId);
+        return vcServiceDeliveryRepository.findById(serviceDeliveryId, "serviceTaskId");
     }
 }

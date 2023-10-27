@@ -59,5 +59,23 @@ public class SunbirdProperties {
     @Value("${transformer.consumer.vc.update.serviceDelivery.task.topic}")
     private String updateServiceDeliveryVCTaskTopic;
 
+    @Value("${sunbird.registry.ulp.credential.host}")
+    private String registryULPHost;
+
+    @Value("${sunbird.registry.ulp.credential.issue.url}")
+    private String registryULPCredentialIssueURL;
+
+    @Value("${sunbird.registry.ulp.issuerId}")
+    private String registryULPIssuerId;
+
+    @Value("${sunbird.registry.ulp.templateId}")
+    private String registryULPTemplateId;
+
+    @Value("${sunbird.registry.ulp.schemaId}")
+    private String registryULPSchemaId;
+
+    @Value("${sunbird.refistry.ulp.schemaVersion}")
+    private String registryULPSchemaVersion;
+
 
 }
