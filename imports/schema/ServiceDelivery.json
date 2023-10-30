@@ -76,7 +76,7 @@
     ],
     "ownershipAttributes": [],
     "certificateTemplates": {
-      "html": "https://raw.githubusercontent.com/Sunbird-RC/demo-digit-hcm-registry/main/imports/schema/templates/ServiceDelivery.html"
+      "html": "https://raw.githubusercontent.com/Sreejit-K/demo-digit-hcm-registry/develop/imports/schema/templates/ServiceDelivery.html"
     }
   }
 }
