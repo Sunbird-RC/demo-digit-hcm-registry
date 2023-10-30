@@ -7,6 +7,7 @@ import org.egov.common.models.household.Household;
 import org.egov.common.models.household.HouseholdMember;
 import org.egov.common.models.individual.Individual;
 
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
@@ -184,6 +185,13 @@ public class ProjectTaskService {
         return iso8601DateTime;
     }
 
+    public static String convertUnixTimestampToISO8601(long timestamp) {
+        Date date = new Date(timestamp);
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+        sdf.setTimeZone(TimeZone.getTimeZone("UTC")); // Set the time zone to UTC
+        return sdf.format(date);
+    }
+
     public static String emptyIfNull(String input) {
     if (input == null) {
         return "";
@@ -201,7 +209,7 @@ public class ProjectTaskService {
                     .quantity(Integer.parseInt(resource.getQuantity().toString() != null ? resource.getQuantity().toString() : "0"))
                     .isDelivered(resource.getIsDelivered() ? true : false)
                     .deliveryComment(emptyIfNull(resource.getDeliveryComment()))
-                    .deliveryDate(convertToISO8601(resource.getAuditDetails().getCreatedTime()))
+                    .deliveryDate(convertUnixTimestampToISO8601(resource.getAuditDetails().getCreatedTime()))
                     .deliveredBy(emptyIfNull(resource.getAuditDetails().getCreatedBy())).build();
             benefitsDelivered.add(resourceToSend);
         }
@@ -210,7 +218,7 @@ public class ProjectTaskService {
                 .beneficiaryType("HOUSEHOLD")
                 .projectId(emptyIfNull(projectBeneficiary.getId()))
                 .tenantId(emptyIfNull(projectBeneficiary.getTenantId()))
-                .registrationDate(convertToISO8601(projectBeneficiary.getDateOfRegistration()))
+                .registrationDate(convertUnixTimestampToISO8601(projectBeneficiary.getDateOfRegistration()))
                 .build();
 
         return new RegistryRequest(serviceDeliveryId, benificiaryDTO, benefitsDelivered);

@@ -15,8 +15,8 @@ public class ResourceDTO {
     private String productVariantId;
     @Value("")
     private int quantity;
-    @Value("")
-    private boolean isDelivered;
+    @Value("false")
+    private Boolean isDelivered;
     @Value("")
     private String deliveryComment;
     @Value("")
