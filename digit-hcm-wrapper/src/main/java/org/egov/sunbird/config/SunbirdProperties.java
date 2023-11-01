@@ -53,11 +53,26 @@ public class SunbirdProperties {
     @Value("${sunbird.registry.url}")
     private String registryURL;
 
+    @Value("${sunbird.registry.elocker.user.search}")
+    private String registryElockerUserSearchURL;
+
+    @Value("${sunbird.registry.elocker.user}")
+    private String registryElockerUserGetURL;
+    @Value("${sunbird.registry.elocker.user.invite}")
+    private String registryElockerUserInviteURL;
+    @Value("${sunbird.registry.elocker.send}")
+    private String registryElockerSendForAttestationURL;
+
     @Value("${transformer.consumer.vc.create.serviceDelivery.task.topic}")
     private String saveServiceDeliveryVCTaskTopic;
 
     @Value("${transformer.consumer.vc.update.serviceDelivery.task.topic}")
     private String updateServiceDeliveryVCTaskTopic;
 
+    @Value("${sunbird.keycloak.host}")
+    private String keycloakHost;
+
+    @Value("${sunbird.keycloak.tokenUri}")
+    private String keycloakTokenUri;
 
 }
