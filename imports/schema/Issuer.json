@@ -1,0 +1,129 @@
+{
+  "$schema":"http://json-schema.org/draft-07/schema",
+  "type":"object",
+  "properties":{
+     "Issuer":{
+        "$ref":"#/definitions/Issuer"
+     }
+  },
+  "required":[
+     "Issuer"
+  ],
+  "title":"Issuer",
+  "definitions":{
+     "Issuer":{
+        "$id":"#/properties/Issuer",
+        "type":"object",
+        "title":"The Issuer Schema",
+        "required":[
+           "title",
+           "issuer",
+           "category",
+           "policyName"
+        ],
+        "properties":{
+           "title":{
+              "type":"string",
+              "title":"Title"
+           },
+           "name":{
+              "type":"string",
+              "title":"Name"
+           },
+           "logoUrl":{
+              "type":"string",
+              "title":"Logo Url"
+           },
+           "category":{
+              "type":"string",
+              "title":"Category",
+              "enum":[
+                 "Health",
+                 "Identity",
+                 "Education",
+                 "Finance",
+                 "Employment"
+              ]
+           },
+           "additionalInput":{
+              "type":"string",
+              "title":"Input",
+              "default":"{}"
+           },
+           "policyName":{
+              "type":"string",
+              "title":"Policy Name"
+           },
+           "publicKey":{
+              "type":"string",
+              "title":"Public Key"
+           },
+           "steps": {
+              "type": "array",
+              "items": {
+                 "name": {
+                    "type": "string"
+                 },
+                 "api": {
+                    "type": "string"
+                 },
+                 "form": {
+                    "type": "string",
+                    "default":"{}"
+                 }
+              }
+           }
+        }
+     }
+  },
+  "_osConfig":{
+     "osComment":[
+        "This section contains the OpenSABER specific configuration information",
+        "privateFields: Optional; list of field names to be encrypted and stored in database",
+        "signedFields: Optional; list of field names that must be pre-signed",
+        "indexFields: Optional; list of field names used for creating index. Enclose within braces to indicate it is a composite index. In this definition, (serialNum, IssuerCode) is a composite index and IssuerName is a single column index.",
+        "uniqueIndexFields: Optional; list of field names used for creating unique index. Field names must be different from index field name",
+        "systemFields: Optional; list of fields names used for system standard information like created, updated timestamps and Issuerid"
+     ],
+     "privateFields":[
+        
+     ],
+     "signedFields":[
+        
+     ],
+     "indexFields":[
+        
+     ],
+     "uniqueIndexFields":[
+        
+     ],
+     "systemFields":[
+        "_osCreatedAt",
+        "_osUpdatedAt",
+        "_osCreatedBy",
+        "_osUpdatedBy",
+        "_osAttestedData",
+        "_osClaimId",
+        "_osState"
+     ],
+     "attestationAttributes":[
+        
+     ],
+     "attestationPolicies":[
+        
+     ],
+     "autoAttestationPolicies":[
+        
+     ],
+     "ownershipAttributes":[
+        
+     ],
+     "inviteRoles":[
+        "admin"
+     ],
+     "roles":[
+        "admin"
+     ],
+     "enableLogin":false
+  }
+}

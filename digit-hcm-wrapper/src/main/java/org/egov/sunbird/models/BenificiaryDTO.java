@@ -22,7 +22,6 @@ public class BenificiaryDTO {
     private String tenantId;
     @Value("")
     private String registrationDate;
-
-    // Constructors, getters, and setters
-
+    @Value("")
+    private String mobileNumber;
 }

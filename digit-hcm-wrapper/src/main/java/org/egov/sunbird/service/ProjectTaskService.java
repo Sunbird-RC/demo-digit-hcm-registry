@@ -1,17 +1,19 @@
 package org.egov.sunbird.service;
 
-import ch.qos.logback.core.encoder.EchoEncoder;
 import lombok.extern.slf4j.Slf4j;
 import org.egov.common.http.client.ServiceRequestClient;
 import org.egov.common.models.household.Household;
 import org.egov.common.models.household.HouseholdMember;
 import org.egov.common.models.individual.Individual;
-
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.client.RestTemplate;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import org.egov.common.models.project.BeneficiaryBulkResponse;
+
 import org.egov.common.models.project.ProjectBeneficiary;
 import org.egov.common.models.project.Task;
 import org.egov.common.models.project.TaskResource;
@@ -128,8 +130,7 @@ public class ProjectTaskService {
             }
 
             RegistryRequest reqToCreateVC = registryRequestTransformer(task.getResources(), projectBeneficiary,task.getId());
-
-
+            String mobileNumber = reqToCreateVC.getBeneficiary().getMobileNumber();
             if (isCreate) {
 
                     StringBuilder uri = new StringBuilder();
@@ -144,6 +145,7 @@ public class ProjectTaskService {
                         throw new CustomException(REGISTRY_VC_CREATION_ERROR,
                                 REGISTRY_VC_CREATION_ERROR_MESSAGE + exception);
                     }
+//                    fetchTheServiceDeliveryPDF(response.getResult().getServiceDelivery().getOsid());
                     try {
                         // Create the Mapper data
                         VcServiceDelivery auditDetailsToAddInDB = VcServiceDelivery.builder()
@@ -172,6 +174,33 @@ public class ProjectTaskService {
         }
     }
 
+    public byte[] fetchTheServiceDeliveryPDF(String osid) {
+        RestTemplate restTemplate = new RestTemplate();
+
+        // Define the URL and headers for the request
+        StringBuilder url = new StringBuilder();
+        String value = properties.getProjectBeneficiarySearchUrl();
+        url.append(properties.getRegistryHost()).append(properties.getRegistryURL()).append("/"+ osid);
+//        String url = "http://localhost:8081/api/v1/ServiceDelivery/1-3457535b-43c1-4b29-9445-32d0a6bc5a51" + osid;
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("Accept", MediaType.APPLICATION_PDF_VALUE);
+
+        // Send the GET request
+        ResponseEntity<byte[]> responseEntity = restTemplate.getForEntity(url.toString(), byte[].class);
+
+        // Check the response status
+        if (responseEntity.getStatusCode().is2xxSuccessful()) {
+            byte[] responseBody = responseEntity.getBody();
+            System.out.println("response from pdf"+responseBody);
+            return responseBody;
+            // Handle the PDF response as needed (e.g., save it to a file)
+        } else {
+            System.out.println("Request failed with status code: " + responseEntity.getStatusCodeValue());
+            throw new CustomException(CREATION_OF_SERVICE_DELIVERY_MAPPER_TABLE_ERROR ,
+                    CREATION_OF_SERVICE_DELIVERY_MAPPER_TABLE_ERROR_MESSAGE);
+        }
+
+    }
 
     public static String convertToISO8601(long unixTimestamp) {
         // Convert Unix timestamp to Instant
@@ -191,6 +220,18 @@ public class ProjectTaskService {
         sdf.setTimeZone(TimeZone.getTimeZone("UTC")); // Set the time zone to UTC
         return sdf.format(date);
     }
+
+    public static String generateRandomPhoneNumber() {
+        Random random = new Random();
+        // Generate a random 3-digit area code (between 100 and 999)
+        int areaCode = 100 + random.nextInt(900);
+        // Generate a random 7-digit local number (between 1000000 and 9999999)
+        int localNumber = 1000000 + random.nextInt(9000000);
+        // Format the phone number with dashes or spaces
+        String formattedPhoneNumber = String.format("%03d%07d", areaCode, localNumber);
+        return formattedPhoneNumber;
+    }
+
 
     public static String emptyIfNull(String input) {
     if (input == null) {
@@ -219,6 +260,7 @@ public class ProjectTaskService {
                 .projectId(emptyIfNull(projectBeneficiary.getId()))
                 .tenantId(emptyIfNull(projectBeneficiary.getTenantId()))
                 .registrationDate(convertUnixTimestampToISO8601(projectBeneficiary.getDateOfRegistration()))
+                .mobileNumber(generateRandomPhoneNumber())
                 .build();
 
         return new RegistryRequest(serviceDeliveryId, benificiaryDTO, benefitsDelivered);
