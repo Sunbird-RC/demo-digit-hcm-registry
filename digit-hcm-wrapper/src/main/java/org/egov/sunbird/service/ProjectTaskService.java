@@ -1,14 +1,18 @@
 package org.egov.sunbird.service;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.egov.common.http.client.ServiceRequestClient;
 import org.egov.common.models.household.Household;
 import org.egov.common.models.household.HouseholdMember;
 import org.egov.common.models.individual.Individual;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
+
+import java.io.*;
 import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.ZoneId;
@@ -23,23 +27,15 @@ import org.egov.sunbird.config.SunbirdProperties;
 import org.egov.sunbird.models.*;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
 
 import java.util.*;
 
-import static org.egov.sunbird.Constants.HOUSEHOLD_FETCH_ERROR;
-import static org.egov.sunbird.Constants.HOUSEHOLD_FETCH_ERROR_MESSAGE;
-import static org.egov.sunbird.Constants.HOUSEHOLD_MEMBER_FETCH_ERROR;
-import static org.egov.sunbird.Constants.HOUSEHOLD_MEMBER_FETCH_ERROR_MESSAGE;
-import static org.egov.sunbird.Constants.INDIVIDUAL_FETCH_ERROR;
-import static org.egov.sunbird.Constants.INDIVIDUAL_FETCH_ERROR_MESSAGE;
-import static org.egov.sunbird.Constants.PROJECT_BENEFICIARY_FETCH_ERROR;
-import static org.egov.sunbird.Constants.PROJECT_BENEFICIARY_FETCH_ERROR_MESSAGE;
-import static org.egov.sunbird.Constants.REGISTRY_VC_CREATION_ERROR;
-import static org.egov.sunbird.Constants.REGISTRY_VC_CREATION_ERROR_MESSAGE;
-import static org.egov.sunbird.Constants.CREATION_OF_SERVICE_DELIVERY_MAPPER_TABLE_ERROR;
-import static org.egov.sunbird.Constants.CREATION_OF_SERVICE_DELIVERY_MAPPER_TABLE_ERROR_MESSAGE;
+import static org.egov.sunbird.Constants.*;
 
 @Component
 @Slf4j
@@ -55,6 +51,8 @@ public class ProjectTaskService {
     private final HouseholdService householdService;
     private final IndividualService individualService;
     private final ProjectService projectService;
+    String clientId = "registry-frontend";
+    String password = "abcd@123";
 
 
 
@@ -163,14 +161,198 @@ public class ProjectTaskService {
                         throw new CustomException(CREATION_OF_SERVICE_DELIVERY_MAPPER_TABLE_ERROR ,
                                 CREATION_OF_SERVICE_DELIVERY_MAPPER_TABLE_ERROR_MESSAGE +  exception);
                     }
-
-
+                    try {
+                        String pdfFilePath = "/home/beehyv/Downloads/1-498be187-cf75-44aa-a5b3-8ad3a2f84b5a (10).pdf";
+                        byte[] document = convertPDFToByteArray(pdfFilePath);
+                        String beneficiaryId = "1234567897";
+                        String mobile = beneficiaryId;
+                        String userOsid = getELockerUser(beneficiaryId, mobile);
+                        String documentName = String.format("%s-%s.pdf", beneficiaryId, new Date().getTime());
+                        String userToken = generateToken(mobile, password);
+                        String documentLocation = saveDocumentToELocker(documentName, userOsid, document, userToken);
+                        sendDocumentForSelfAttestation(mobile, userOsid, documentName, documentLocation);
+                    } catch (Exception e) {
+                        log.error("Exception occurred while saving document to ELocker: {}", ExceptionUtils.getStackTrace(e));
+                        throw e;
+                    }
             } else {
                 //     TODO update logic here
                 //     get the VC_Id from the mapper table using the service_taskID
                 //     update the vc in registry
                 //     Emit an event to kafka topic to update using the taskID mapper with the new VC in the mapper table
             }
+        }
+    }
+
+    private static byte[] convertPDFToByteArray(String pdfFilePath) {
+        try {
+            File file = new File(pdfFilePath);
+            FileInputStream fileInputStream = new FileInputStream(file);
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+
+            byte[] buffer = new byte[1024];
+            int bytesRead;
+            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                byteArrayOutputStream.write(buffer, 0, bytesRead);
+            }
+
+            fileInputStream.close();
+            byteArrayOutputStream.close();
+
+            return byteArrayOutputStream.toByteArray();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String generateToken(String username, String password) {
+        StringBuilder uri = new StringBuilder();
+        uri.append(properties.getKeycloakHost()).append(properties.getKeycloakTokenUri());
+
+        // Set the headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+
+        // Create the request body with the form data
+        MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
+        formData.add("client_id", clientId);
+        formData.add("username", username);
+        formData.add("password", password);
+        formData.add("grant_type", "password");
+
+        // Create an HttpEntity with the headers and request body
+        HttpEntity<MultiValueMap<String, String>> requestEntity = new HttpEntity<>(formData, headers);
+
+        Map results = serviceRequestClient.fetchResult(uri, requestEntity, Map.class);
+        return ((Map<String, String>) results).get("access_token");
+    }
+
+    private String getELockerUser(String beneficiaryId, String mobileNumber) {
+        StringBuilder uri = new StringBuilder();
+        uri.append(properties.getRegistryHost()).append(properties.getRegistryElockerUserSearchURL());
+
+        // Set the headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // Create the request body with the form data
+        String requestBody = "{" +
+                "\"offset\": 0," +
+                "\"limit\": 1," +
+                "\"filters\": {" +
+                "\"identityDetails.fullName\": {" +
+                "\"eq\": \""+ beneficiaryId +"\"" +
+                "}" +
+                "}" +
+                "}";
+
+        // Create an HttpEntity with the headers and request body
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        List<Map<String, Object>> results = serviceRequestClient.fetchResult(uri, requestEntity, List.class);
+        if(results.size() == 0) {
+            this.inviteElockerUser(beneficiaryId, mobileNumber);
+            return this.getELockerUser(beneficiaryId, mobileNumber);
+        }
+        return (String) results.get(0).get("osid");
+    }
+
+    private void inviteElockerUser(String beneficiaryId, String mobileNumber) {
+        StringBuilder uri = new StringBuilder();
+        uri.append(properties.getRegistryHost()).append(properties.getRegistryElockerUserInviteURL());
+
+        // Set the headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+
+        // Create the request body with the form data
+        String requestBody = "{" +
+                "\"identityDetails\": {" +
+                "\"fullName\": \"" + beneficiaryId + "\"" +
+                "}," +
+                "\"contactDetails\": {" +
+                "\"email\": \"" + mobileNumber +"\"," +
+                "\"mobile\": \""+ mobileNumber + "\"" +
+                "}," +
+                "\"documents\": []" +
+                "}";
+
+        // Create an HttpEntity with the headers and request body
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        Map<String, Object> results = (Map<String, Object>) serviceRequestClient.fetchResult(uri, requestEntity, Map.class);
+        Map<String, String> params = (Map<String, String>) results.get("params");
+        if(!params.get("status").equals("SUCCESSFUL")) {
+            throw new RuntimeException("Error while creating elocker user for beneficiary");
+        }
+    }
+
+    private String saveDocumentToELocker(String documentName, String userOsid, byte[] document, String token) {
+        StringBuilder uri = new StringBuilder();
+        uri.append(properties.getRegistryHost())
+                .append(properties.getRegistryElockerUserGetURL())
+                .append("/").append(userOsid)
+                .append("/attestation/documents");
+
+        // Define the request headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
+        headers.set("Accept", "application/json");
+        headers.set(HttpHeaders.AUTHORIZATION, "Bearer " + token);
+
+        // Define the request body as a MultiValueMap (for file upload)
+        MultiValueMap<String, Object> formData = new LinkedMultiValueMap<>();
+
+        // Replace 'fileBytes' with your byte array variable
+        byte[] fileBytes = document;
+        ByteArrayResource byteArrayResource = new ByteArrayResource(fileBytes) {
+            @Override
+            public String getFilename() {
+                return documentName; // Set the desired file name here
+            }
+        };
+
+        formData.add("files", byteArrayResource);
+
+        // Create an HttpEntity with the headers and request body
+        HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(formData, headers);
+
+        Map<String, Object> results = (Map<String, Object>) serviceRequestClient.fetchResult(uri, requestEntity, Map.class);
+        List<String> documentLocations = (List<String>) results.get("documentLocations");
+        return documentLocations.get(0);
+    }
+
+    private void sendDocumentForSelfAttestation(String mobile, String userOsid, String documentName, String documentLocation) {
+        String token = generateToken(mobile, password); // generate user token
+        StringBuilder uri = new StringBuilder();
+        uri.append(properties.getRegistryHost()).append(properties.getRegistryElockerSendForAttestationURL());
+        // Define the request headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.set("Accept", "application/json");
+        headers.set("Authorization", "Bearer " + token);
+
+        // Define the request body as a JSON string
+        String requestBody = "{" +
+                "\"name\": \"attestation-SELF\"," +
+                "\"entityName\": \"User\"," +
+                "\"entityId\": \"" + userOsid + "\"," +
+                "\"additionalInput\": {" +
+                "\"name\": \"" + documentName + "\"," +
+                "\"fileUrl\": [" +
+                "\"" + documentLocation + "\"" +
+                "]" +
+                "}" +
+                "}";
+
+        // Create an HttpEntity with the headers and request body
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
+
+        // Create a Rest
+        Map<String, Object> results = (Map<String, Object>) serviceRequestClient.fetchResult(uri, requestEntity, Map.class);
+        Map<String, String> params = (Map<String, String>) results.get("params");
+        if(!params.get("status").equals("SUCCESSFUL")) {
+            throw new RuntimeException("Error while creating elocker user for beneficiary");
         }
     }
 
