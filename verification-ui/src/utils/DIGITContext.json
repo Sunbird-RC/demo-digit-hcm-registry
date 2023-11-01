@@ -1,0 +1,32 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@protected": true,
+    "id": "@id",
+    "type": "@type",
+    "schema": "https://schema.org/",
+    "digit": "https://raw.githubusercontent.com/Sreejit-K/demo-digit-hcm-registry/develop/context/DIGITContext.json",
+    "DIGITServiceDeliveryEvent": {
+      "@id": "digit:DIGITServiceDeliveryEvent",
+      "@context": {
+        "id": "@id",
+        "@version": 1.1,
+        "@protected": true
+      }
+    },
+    "ServiceDelivery": {
+      "@id": "digit:ServiceDelivery",
+      "@context": {
+        "@version": 1.1,
+        "@protected": true,
+        "benefits": "schema:ItemList",
+        "serviceDeliveryId": "schema:Text",
+        "beneficiaryId": "schema:Text",
+        "beneficiaryType": "schema:Text",
+        "projectId": "schema:Text",
+        "tenantId": "schema:Text",
+        "registrationDate": "schema:Text"
+      }
+    }
+  }
+}

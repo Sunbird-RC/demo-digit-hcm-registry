@@ -144,3 +144,30 @@ services:
       interval: 30s
       timeout: 10s
       retries: 10
+  public-key-service:
+    image: ghcr.io/sunbird-rc/sunbird-rc-public-key-service
+    environment:
+      - CONFIG_BASE_PATH=/etc/keys
+    ports:
+      - '3300:3300'
+    healthcheck:
+      test:
+        ['CMD', 'curl', '-f', 'localhost:3300/public-key-service/api/v1/health']
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    volumes:
+      - ./imports/keys:/etc/keys
+  context-proxy-service:
+    image: ghcr.io/sunbird-rc/sunbird-rc-context-proxy-service
+    ports:
+      - '4400:4400'
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'localhost:4400/health']
+      interval: 30s
+      timeout: 10s
+      retries: 10
+  nginx:
+    image: sreejithk1903/verification-digit
+    ports:
+      - '81:80'
