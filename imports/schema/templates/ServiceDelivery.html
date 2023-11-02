@@ -97,12 +97,7 @@
                     {{this.quantity}}
                 </td>
                 <td>
-                    {{#if @isDelievered == true}}
-                    Delivered
-                    {{/if}}
-                    {{#else}}
-                    Undelivered
-                    {{/else}}
+                    {{this.isDelivered}}
                 </td>
                 <td>
                     {{this.deliveryDate}}

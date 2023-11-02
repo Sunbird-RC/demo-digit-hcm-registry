@@ -80,8 +80,11 @@
         "registrationDate": {
           "type": "string",
           "format": "date-time"
+        },
+        "mobileNumber": {
+          "type" : "string",
+          "title": "mobile Number"
         }
-
       }
     },
     "Resource": {
@@ -165,6 +168,67 @@
         "identifierType": {
           "type": "string",
           "title": "Identifier Type"
+        }
+      }
+    },
+    "IdentityDetails": {
+      "type": "object",
+      "title": "Identity Details",
+      "description": "Identity Details",
+      "required": [],
+      "properties": {
+        "fullName": {
+          "$id": "#/properties/fullName",
+          "type": "string",
+          "title": "Full name"
+        },
+        "gender": {
+          "$id": "#/properties/gender",
+          "type": "string",
+          "enum": [
+            "Male",
+            "Female",
+            "Other"
+          ],
+          "title": "Gender"
+        },
+        "dob": {
+          "$id": "#/properties/dob",
+          "type": "string",
+          "format": "date",
+          "title": "DOB"
+        }
+      }
+    },
+    "ContactDetails": {
+      "type": "object",
+      "title": "Contact Details",
+      "description": "Contact Details",
+      "required": [],
+      "properties": {
+        "email": {
+          "$id": "#/properties/email",
+          "type": "string",
+          "title": "Email"
+        },
+        "mobile": {
+          "$id": "#/properties/mobile",
+          "type": "string",
+          "title": "Mobile"
+        },
+        "address": {
+          "$id": "#/properties/address",
+          "$ref": "#/definitions/Address",
+          "title": "Address"
+        }
+      }
+    },
+    "Document": {
+      "type": "object",
+      "properties": {
+        "fileName": {
+          "type": "string",
+          "format": "file"
         }
       }
     }
