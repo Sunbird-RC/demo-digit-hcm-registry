@@ -72,7 +72,7 @@ services:
     ports:
       - "6379:6379"
   registry:
-    image: ghcr.io/sunbird-rc/sunbird-rc-core:${RELEASE_VERSION}
+    image: docker.io/subhash83925/sunbird-rc-core:elocker
     volumes:
       - ./${SCHEMA_DIR}:/home/sunbirdrc/config/public/_schemas
     environment:
@@ -81,7 +81,12 @@ services:
       - connectionInfo_password=${DB_PASSWORD}
       - elastic_search_auth_enabled=false
       - elastic_search_connection_url=${ES_CONNECTION_URL}
-      - authentication_enabled=false
+      - authentication_enabled=true
+      - claims_enabled=true
+      - claims_url=http://localhost:8082
+      - opa_allow_key_name=authorized
+      - opa_enabled=false
+      - search_limit=2000
       - search_providerName=${SEARCH_PROVIDER_NAME}
       - signature_enabled=true
       - sign_url=http://certificate-signer:8079/sign
@@ -91,7 +96,21 @@ services:
       - certificate_health_check_url=http://certificate-api:8078/health
       - template_base_url=http://registry:8081/api/v1/templates/ #Looks for certificate templates for pdf copy of the signed certificate
       - registry_base_apis_enable=false
+      - sunbird_sso_realm=${KEYCLOAK_REALM-sunbird-rc}
+      - sunbird_sso_url=http://keycloak:8080/auth
+      - sunbird_sso_admin_client_id=${KEYCLOAK_ADMIN_CLIENT_ID-admin-api}
+      - sunbird_sso_client_id=${KEYCLOAK_CLIENT_ID-registry-frontend}
+      - sunbird_sso_admin_client_secret=${KEYCLOAK_SECRET}
+      - sunbird_keycloak_user_password=abcd@123
+      - sunbird_keycloak_user_set_password=true
       - logging.level.root=INFO
+      - certificate_enabled=true
+      - filestorage_enabled=${FILESSTORAGE_ENABLED-true}
+      - filestorage_connection_url=http://file-storage:9000
+      - filestorage_access_key=admin
+      - filestorage_secret_key=12345678
+      - filestorage_bucket_key=issuance
+      - encryption_enabled=false
       - enable_external_templates=true
       - async_enabled=${ASYNC_ENABLED}
       - kafka_bootstrap_address=${KAFKA_BOOTSTRAP_URL}
@@ -100,6 +119,8 @@ services:
       - redis_host=${REDIS_HOST}
       - redis_port=${REDIS_PORT}
       - manager_type=${MANAGER_TYPE}
+      - swagger_enabled=true
+      - swagger_title=HCM
     ports:
       - "8081:8081"
     depends_on:
@@ -115,6 +136,72 @@ services:
       test: [ "CMD-SHELL", "wget -nv -t1 --spider http://localhost:8081/health || exit 1" ]
       interval: 30s
       timeout: 10s
+      retries: 10
+  keycloak:
+    image: ghcr.io/sunbird-rc/sunbird-rc-keycloak:latest
+    volumes:
+      - ./${KEYCLOAK_IMPORT_DIR-imports}:/opt/jboss/keycloak/imports
+    environment:
+      - KEYCLOAK_LOGO=https://svgshare.com/i/hCs.svg
+      - DB_VENDOR=postgres
+      - DB_ADDR=db
+      - DB_PORT=5432
+      - DB_DATABASE=${DB_NAME}
+      - DB_USER=${DB_USERNAME}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - KEYCLOAK_USER=${KEYCLOAK_ADMIN_USER-admin}
+      - KEYCLOAK_PASSWORD=${KEYCLOAK_ADMIN_PASSWORD-admin}
+      - KEYCLOAK_IMPORT=/opt/jboss/keycloak/imports/realm-export.json
+      - PROXY_ADDRESS_FORWARDING=true
+    healthcheck:
+      test: ['CMD-SHELL', 'curl -f http://localhost:9990/ || exit 1']
+      interval: 30s
+      timeout: 10s
+      retries: 10
+    ports:
+      - '8080:8080'
+      - '9990:9990'
+    depends_on:
+      db:
+        condition: service_healthy
+  claim-ms:
+    image: ghcr.io/sunbird-rc/sunbird-rc-claim-ms:${RELEASE_VERSION}
+    environment:
+      - connectionInfo_uri=jdbc:postgresql://db:5432/postgres
+      - connectionInfo_username=postgres
+      - connectionInfo_password=postgres
+      - sunbirdrc_url=http://registry:8081
+    ports:
+      - '8082:8082'
+    depends_on:
+      db:
+        condition: service_started
+      registry:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          'CMD-SHELL',
+          'wget -nv -t1 --spider http://localhost:8082/health || exit 1',
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+  file-storage:
+    image: quay.io/minio/minio
+    volumes:
+      - ${HOME}/minio/data:/data
+    environment:
+      - MINIO_ROOT_USER=admin
+      - MINIO_ROOT_PASSWORD=12345678
+    command: server --address 0.0.0.0:9000 --console-address 0.0.0.0:9001 /data
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:9000/minio/health/live']
+      interval: 30s
+      timeout: 20s
       retries: 10
   certificate-signer:
     image: ghcr.io/sunbird-rc/sunbird-rc-certificate-signer:${RELEASE_VERSION}
@@ -171,3 +258,18 @@ services:
     image: sreejithk1903/verification-digit
     ports:
       - '81:80'
+  elocker-ui: 
+    image: subhash83925/elocker-ui:latest
+    volumes:
+      - ./elocker.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      registry:
+        condition: service_started
+      keycloak:
+        condition: service_started
+    ports: 
+      - '82:80'
+
+networks:
+  default:
+    name: hcm-net

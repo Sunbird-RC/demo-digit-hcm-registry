@@ -50,16 +50,21 @@ public class SunbirdProperties {
     @Value("${sunbird.registry.host}")
     private String registryHost;
 
-    @Value("${sunbird.registry.url}")
+    @Value("${sunbird.registry.serviceDelivery.create}")
     private String registryURL;
+
+    @Value("${sunbird.registry.serviceDelivery.search}")
+    private String serviceDeliverySearchURL;
 
     @Value("${sunbird.registry.elocker.user.search}")
     private String registryElockerUserSearchURL;
 
     @Value("${sunbird.registry.elocker.user}")
     private String registryElockerUserGetURL;
+
     @Value("${sunbird.registry.elocker.user.invite}")
     private String registryElockerUserInviteURL;
+
     @Value("${sunbird.registry.elocker.send}")
     private String registryElockerSendForAttestationURL;
 
@@ -74,5 +79,11 @@ public class SunbirdProperties {
 
     @Value("${sunbird.keycloak.tokenUri}")
     private String keycloakTokenUri;
+
+    @Value("${sunbird.keycloak.clientId}")
+    private String keycloakClientId;
+
+    @Value("${sunbird.keycloak.user.default.password}")
+    private String keycloakUserDefaultPassword;
 
 }

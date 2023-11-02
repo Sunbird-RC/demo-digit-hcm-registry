@@ -66,10 +66,10 @@
     "indexFields": [],
     "uniqueIndexFields": [],
     "systemFields": [
-      "_osCreatedAt",
-      "_osUpdatedAt",
-      "_osCreatedBy",
-      "_osUpdatedBy",
+      "osCreatedAt",
+      "osUpdatedAt",
+      "osCreatedBy",
+      "osUpdatedBy",
       "_osAttestedData",
       "_osClaimId",
       "_osState"
@@ -134,7 +134,7 @@
         "attestorPlugin": "did:external:DivocPDFActor"
       }
     ],
-    "credentialTemplate": {},
+    "credentialTemplate": null,
     "ownershipAttributes": [
       {
         "email": "/contactDetails/email",

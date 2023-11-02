@@ -7,9 +7,7 @@ import org.egov.common.models.household.Household;
 import org.egov.common.models.household.HouseholdMember;
 import org.egov.common.models.individual.Individual;
 import org.springframework.core.io.ByteArrayResource;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
 
 import java.io.*;
@@ -27,13 +25,13 @@ import org.egov.sunbird.config.SunbirdProperties;
 import org.egov.sunbird.models.*;
 import org.egov.tracer.model.CustomException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static org.egov.sunbird.Constants.*;
 
@@ -51,7 +49,6 @@ public class ProjectTaskService {
     private final HouseholdService householdService;
     private final IndividualService individualService;
     private final ProjectService projectService;
-    String clientId = "registry-frontend";
     String password = "abcd@123";
 
 
@@ -70,7 +67,7 @@ public class ProjectTaskService {
         this.projectService = projectService;
     }
 
-    public void transform(List<Task> taskList, Boolean isCreate) {
+    public void transform(List<Task> taskList, Boolean isCreate) throws InterruptedException {
 
         List<String> projectBeneficiaryClientReferenceIds = new ArrayList<>();
         List<String> householdClientReferenceIds = new ArrayList<>();
@@ -100,7 +97,7 @@ public class ProjectTaskService {
                               Map<String, Household> householdMap,
                               Map<String, HouseholdMember> hosueholdHeadMap,
                               Map<String, Individual> individualMap,
-                              boolean isCreate) {
+                              boolean isCreate) throws InterruptedException {
         for (Task task : taskList) {
             ProjectBeneficiary projectBeneficiary = projectBeneficiaryMap
                     .get(task.getProjectBeneficiaryClientReferenceId());
@@ -127,10 +124,10 @@ public class ProjectTaskService {
                         INDIVIDUAL_FETCH_ERROR_MESSAGE + householdHeadMember.getIndividualClientReferenceId());
             }
 
-            RegistryRequest reqToCreateVC = registryRequestTransformer(task.getResources(), projectBeneficiary,task.getId());
+            RegistryRequest reqToCreateVC = registryRequestTransformer(task.getResources(), projectBeneficiary,task.getId(), task);
             String mobileNumber = reqToCreateVC.getBeneficiary().getMobileNumber();
             if (isCreate) {
-
+                    String serviceDeliveryOsId = "";
                     StringBuilder uri = new StringBuilder();
                     uri.append(properties.getRegistryHost()).append(properties.getRegistryURL());
                     RegistryResponse response = null;
@@ -138,71 +135,93 @@ public class ProjectTaskService {
                         response = serviceRequestClient.fetchResult(uri,
                                 reqToCreateVC,
                                 RegistryResponse.class);
+                        serviceDeliveryOsId = response.getResult().getServiceDelivery().getOsid();
+
+                        try {
+                            // Create the Mapper data
+                            VcServiceDelivery auditDetailsToAddInDB = VcServiceDelivery.builder()
+                                    .id(UUID.randomUUID().toString())
+                                    .serviceTaskId(task.getId())
+                                    .certificateId(serviceDeliveryOsId)
+                                    .distributedBy(emptyIfNull(task.getCreatedBy()))
+                                    .beneficiaryId(emptyIfNull(task.getProjectBeneficiaryClientReferenceId()))
+                                    .auditDetails(task.getAuditDetails())
+                                    .build();
+                            List<VcServiceDelivery> auditDetails = new ArrayList<VcServiceDelivery>();
+                            auditDetails.add(auditDetailsToAddInDB );
+                            vcServiceDeliveryRepository.save( auditDetails, properties.getSaveServiceDeliveryVCTaskTopic());
+                        } catch (Exception exception) {
+                            throw new CustomException(CREATION_OF_SERVICE_DELIVERY_MAPPER_TABLE_ERROR ,
+                                    CREATION_OF_SERVICE_DELIVERY_MAPPER_TABLE_ERROR_MESSAGE +  exception);
+                        }
+
                     } catch (Exception exception) {
-                        log.error("error occurred while creating a VC using the Registry service: {}", exception.getMessage());
-                        throw new CustomException(REGISTRY_VC_CREATION_ERROR,
-                                REGISTRY_VC_CREATION_ERROR_MESSAGE + exception);
+                        log.error("error occurred while creating a VC using the Registry service: {}", ExceptionUtils.getStackTrace(exception));
+                        try {
+                            serviceDeliveryOsId = checkForExistingServiceTask(reqToCreateVC.getServiceDeliveryId());
+                        } catch (Exception searchException) {
+                            throw new CustomException(REGISTRY_VC_CREATION_ERROR,
+                                    REGISTRY_VC_CREATION_ERROR_MESSAGE + ExceptionUtils.getStackTrace(searchException));
+                        }
                     }
-//                    fetchTheServiceDeliveryPDF(response.getResult().getServiceDelivery().getOsid());
+//                   fetchTheServiceDeliveryPDF(response.getResult().getServiceDelivery().getOsid());
                     try {
-                        // Create the Mapper data
-                        VcServiceDelivery auditDetailsToAddInDB = VcServiceDelivery.builder()
-                                .id(UUID.randomUUID().toString())
-                                .serviceTaskId(task.getId())
-                                .certificateId(response.getResult().getServiceDelivery().getOsid())
-                                .distributedBy(emptyIfNull(task.getCreatedBy()))
-                                .beneficiaryId(emptyIfNull(task.getProjectBeneficiaryId()))
-                                .auditDetails(task.getAuditDetails())
-                                .build();
-                        List<VcServiceDelivery> auditDetails = new ArrayList<VcServiceDelivery>();
-                        auditDetails.add(auditDetailsToAddInDB );
-                        vcServiceDeliveryRepository.save( auditDetails, properties.getSaveServiceDeliveryVCTaskTopic());
-                    } catch (Exception exception) {
-                        throw new CustomException(CREATION_OF_SERVICE_DELIVERY_MAPPER_TABLE_ERROR ,
-                                CREATION_OF_SERVICE_DELIVERY_MAPPER_TABLE_ERROR_MESSAGE +  exception);
-                    }
-                    try {
-                        String pdfFilePath = "/home/beehyv/Downloads/1-498be187-cf75-44aa-a5b3-8ad3a2f84b5a (10).pdf";
-                        byte[] document = convertPDFToByteArray(pdfFilePath);
-                        String beneficiaryId = "1234567897";
+                        byte[] document =  fetchTheServiceDeliveryPDF(serviceDeliveryOsId);;
+                        String beneficiaryId = task.getProjectBeneficiaryClientReferenceId();
                         String mobile = beneficiaryId;
                         String userOsid = getELockerUser(beneficiaryId, mobile);
                         String documentName = String.format("%s-%s.pdf", beneficiaryId, new Date().getTime());
-                        String userToken = generateToken(mobile, password);
+                        String userToken = generateToken(mobile, properties.getKeycloakUserDefaultPassword());
                         String documentLocation = saveDocumentToELocker(documentName, userOsid, document, userToken);
                         sendDocumentForSelfAttestation(mobile, userOsid, documentName, documentLocation);
                     } catch (Exception e) {
                         log.error("Exception occurred while saving document to ELocker: {}", ExceptionUtils.getStackTrace(e));
-                        throw e;
+                        throw new RuntimeException(e);
                     }
-            } else {
+            }
                 //     TODO update logic here
                 //     get the VC_Id from the mapper table using the service_taskID
                 //     update the vc in registry
                 //     Emit an event to kafka topic to update using the taskID mapper with the new VC in the mapper table
-            }
         }
     }
 
-    private static byte[] convertPDFToByteArray(String pdfFilePath) {
-        try {
-            File file = new File(pdfFilePath);
-            FileInputStream fileInputStream = new FileInputStream(file);
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
 
-            byte[] buffer = new byte[1024];
-            int bytesRead;
-            while ((bytesRead = fileInputStream.read(buffer)) != -1) {
-                byteArrayOutputStream.write(buffer, 0, bytesRead);
-            }
+    private String checkForExistingServiceTask (String serviceDeliveryId) {
 
-            fileInputStream.close();
-            byteArrayOutputStream.close();
+        StringBuilder uri = new StringBuilder();
+        uri.append(properties.getRegistryHost()).append(properties.getServiceDeliverySearchURL());
 
-            return byteArrayOutputStream.toByteArray();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        // Create a RestTemplate instance
+        RestTemplate restTemplate = new RestTemplate();
+
+        // Set the request headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_JSON));
+
+        // Define the request body
+        String requestBody = "{\n" +
+                "  \"offset\": 0,\n" +
+                "  \"limit\": 2,\n" +
+                "  \"filters\": {\n" +
+                "    \"serviceDeliveryId\": {\n" +
+                "      \"eq\": \""+serviceDeliveryId+"\"\n" +
+                "    }\n" +
+                "  }\n" +
+                "}";
+
+        // Create a request entity with the headers and request body
+        HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
+        // Send the POST request and handle the response
+        List<Map<String, Object>> responseEntity = serviceRequestClient.fetchResult(uri, requestEntity, List.class);
+        // Check the response status and handle the JSON response as needed
+        if (responseEntity.size() == 0 ) {
+            log.error("error occurred while searching a VC using the Registry service: {}", responseEntity);
+            throw new CustomException(REGISTRY_VC_SEARCH_ERROR,
+                    REGISTRY_VC_SEARCH_ERROR_MESSAGE + responseEntity.toString());
         }
+        return (String) responseEntity.get(0).get("osid");
     }
 
     private String generateToken(String username, String password) {
@@ -215,7 +234,7 @@ public class ProjectTaskService {
 
         // Create the request body with the form data
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        formData.add("client_id", clientId);
+        formData.add("client_id", properties.getKeycloakClientId());
         formData.add("username", username);
         formData.add("password", password);
         formData.add("grant_type", "password");
@@ -227,7 +246,7 @@ public class ProjectTaskService {
         return ((Map<String, String>) results).get("access_token");
     }
 
-    private String getELockerUser(String beneficiaryId, String mobileNumber) {
+    private String getELockerUser(String beneficiaryId, String mobileNumber) throws InterruptedException {
         StringBuilder uri = new StringBuilder();
         uri.append(properties.getRegistryHost()).append(properties.getRegistryElockerUserSearchURL());
 
@@ -252,6 +271,7 @@ public class ProjectTaskService {
         List<Map<String, Object>> results = serviceRequestClient.fetchResult(uri, requestEntity, List.class);
         if(results.size() == 0) {
             this.inviteElockerUser(beneficiaryId, mobileNumber);
+            TimeUnit.SECONDS.sleep(5);
             return this.getELockerUser(beneficiaryId, mobileNumber);
         }
         return (String) results.get(0).get("osid");
@@ -323,7 +343,7 @@ public class ProjectTaskService {
     }
 
     private void sendDocumentForSelfAttestation(String mobile, String userOsid, String documentName, String documentLocation) {
-        String token = generateToken(mobile, password); // generate user token
+        String token = generateToken(mobile, properties.getKeycloakUserDefaultPassword()); // generate user token
         StringBuilder uri = new StringBuilder();
         uri.append(properties.getRegistryHost()).append(properties.getRegistryElockerSendForAttestationURL());
         // Define the request headers
@@ -363,12 +383,14 @@ public class ProjectTaskService {
         StringBuilder url = new StringBuilder();
         String value = properties.getProjectBeneficiarySearchUrl();
         url.append(properties.getRegistryHost()).append(properties.getRegistryURL()).append("/"+ osid);
-//        String url = "http://localhost:8081/api/v1/ServiceDelivery/1-3457535b-43c1-4b29-9445-32d0a6bc5a51" + osid;
         HttpHeaders headers = new HttpHeaders();
-        headers.set("Accept", MediaType.APPLICATION_PDF_VALUE);
+        headers.setAccept(Collections.singletonList(MediaType.APPLICATION_PDF));
 
-        // Send the GET request
-        ResponseEntity<byte[]> responseEntity = restTemplate.getForEntity(url.toString(), byte[].class);
+        // Create a request entity with the headers
+        HttpEntity<String> requestEntity = new HttpEntity<>(headers);
+
+        // Send the request to fetch the PDF
+        ResponseEntity<byte[]> responseEntity = restTemplate.exchange(url.toString(), HttpMethod.GET, requestEntity, byte[].class);
 
         // Check the response status
         if (responseEntity.getStatusCode().is2xxSuccessful()) {
@@ -422,7 +444,7 @@ public class ProjectTaskService {
     return input;
     }
 
-    public static RegistryRequest registryRequestTransformer(List<TaskResource> resources, ProjectBeneficiary projectBeneficiary, String serviceDeliveryId) {
+    public static RegistryRequest registryRequestTransformer(List<TaskResource> resources, ProjectBeneficiary projectBeneficiary, String serviceDeliveryId , Task task) {
 
         List<ResourceDTO> benefitsDelivered = new ArrayList<ResourceDTO>() ;
         for (TaskResource resource : resources) {
@@ -437,7 +459,7 @@ public class ProjectTaskService {
             benefitsDelivered.add(resourceToSend);
         }
         BenificiaryDTO benificiaryDTO = BenificiaryDTO.builder()
-                .beneficiaryId(emptyIfNull(projectBeneficiary.getId()))
+                .beneficiaryId(emptyIfNull(task.getProjectBeneficiaryClientReferenceId()))
                 .beneficiaryType("HOUSEHOLD")
                 .projectId(emptyIfNull(projectBeneficiary.getId()))
                 .tenantId(emptyIfNull(projectBeneficiary.getTenantId()))
