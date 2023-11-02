@@ -144,7 +144,7 @@ public class ProjectTaskService {
                                     .serviceTaskId(task.getId())
                                     .certificateId(serviceDeliveryOsId)
                                     .distributedBy(emptyIfNull(task.getCreatedBy()))
-                                    .beneficiaryId(emptyIfNull(task.getProjectBeneficiaryClientReferenceId()))
+                                    .beneficiaryId(emptyIfNull(projectBeneficiary.getId()))
                                     .auditDetails(task.getAuditDetails())
                                     .build();
                             List<VcServiceDelivery> auditDetails = new ArrayList<VcServiceDelivery>();
@@ -167,7 +167,7 @@ public class ProjectTaskService {
 //                   fetchTheServiceDeliveryPDF(response.getResult().getServiceDelivery().getOsid());
                     try {
                         byte[] document =  fetchTheServiceDeliveryPDF(serviceDeliveryOsId);;
-                        String beneficiaryId = task.getProjectBeneficiaryClientReferenceId();
+                        String beneficiaryId = projectBeneficiary.getId();
                         String mobile = beneficiaryId;
                         String userOsid = getELockerUser(beneficiaryId, mobile);
                         String documentName = String.format("%s-%s.pdf", beneficiaryId, new Date().getTime());
@@ -459,9 +459,9 @@ public class ProjectTaskService {
             benefitsDelivered.add(resourceToSend);
         }
         BenificiaryDTO benificiaryDTO = BenificiaryDTO.builder()
-                .beneficiaryId(emptyIfNull(task.getProjectBeneficiaryClientReferenceId()))
+                .beneficiaryId(emptyIfNull(projectBeneficiary.getId()))
                 .beneficiaryType("HOUSEHOLD")
-                .projectId(emptyIfNull(projectBeneficiary.getId()))
+                .projectId(emptyIfNull(task.getProjectBeneficiaryClientReferenceId()))
                 .tenantId(emptyIfNull(projectBeneficiary.getTenantId()))
                 .registrationDate(convertUnixTimestampToISO8601(projectBeneficiary.getDateOfRegistration()))
                 .mobileNumber(generateRandomPhoneNumber())
