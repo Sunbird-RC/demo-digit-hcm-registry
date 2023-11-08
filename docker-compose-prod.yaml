@@ -1,0 +1,20 @@
+version: "2.4"
+
+services:
+  nginx:
+    image: sreejithk1903/verification-ui-prod:latest
+    ports:
+      - '81:80'
+  elocker-ui: 
+    image: subhash83925/elocker-ui:latest
+    volumes:
+      - ./elockerprod.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      nginx:
+        condition: service_started
+    ports: 
+      - '82:80'
+
+networks:
+  default:
+    name: hcm-prod

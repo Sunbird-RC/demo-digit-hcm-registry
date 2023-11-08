@@ -86,4 +86,7 @@ public class SunbirdProperties {
     @Value("${sunbird.keycloak.user.default.password}")
     private String keycloakUserDefaultPassword;
 
+    @Value("${sunbird.keycloak.admin.client.secret}")
+    private String keycloakAdminSecret;
+
 }
