@@ -1,0 +1,19 @@
+.img-mb {
+    margin-top: 5rem;
+}
+
+.html-viewer {
+    height: calc(100vh - 8rem);
+    border: 4px solid;
+    border-radius: 5px;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+.bg-header {
+    background: var(--cardBackground) !important;
+}
