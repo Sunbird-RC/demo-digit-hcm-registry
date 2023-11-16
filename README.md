@@ -107,7 +107,7 @@ sudo docker-compose up -d --force-recreate --no-deps registry
 
 ## Flow 
 
-- This CURL creates a kafka event in the wrapper 
+- This CURL creates a kafka event in the wrapper (If the CURL doesnt work check with the HCM Team for a new CURL)
 
 - This event will be consumed with in the wrapper (Production expectation: the event will be receved from the persister in digit)
 
