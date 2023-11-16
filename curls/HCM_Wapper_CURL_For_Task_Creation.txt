@@ -1,0 +1,85 @@
+curl --location 'localhost:8083/sunbird/task/v1/bulk/_create' \
+--header 'Content-Type: application/json' \
+--data '{
+    "RequestInfo": {
+        "authToken": "test"
+    },
+    "Tasks": [
+       {
+            "id": "PT-2023-10-13-869349",
+            "tenantId": "mz",
+            "clientReferenceId": "8f9ba070-68e3-11ee-b8d1-4ba36535319c",
+            "projectId": "c7851c20-9b98-44e8-b104-65e5160565ae",
+            "projectBeneficiaryId": null,
+            "projectBeneficiaryClientReferenceId": "8d031b40-68e3-11ee-b8d1-4ba36535319c",
+            "resources": [
+                {
+                    "id": "0904499f-4233-4b46-9137-3e67a0790030",
+                    "tenantId": "mz",
+                    "clientReferenceId": "8f9ba070-68e3-11ee-b8d1-4ba36535319c",
+                    "taskId": "PT-2023-10-13-869341",
+                    "productVariantId": "PVAR-2023-07-11-000001",
+                    "quantity": 1,
+                    "isDelivered": true,
+                    "deliveryComment": null,
+                    "isDeleted": false,
+                    "auditDetails": {
+                        "createdBy": "f687ee1a-edb8-4a54-903b-afe5d713d2f6",
+                        "lastModifiedBy": "testing",
+                        "createdTime": 1697190188182,
+                        "lastModifiedTime": 1697455305090
+                    }
+                }
+            ],
+            "plannedStartDate": 0,
+            "plannedEndDate": 0,
+            "actualStartDate": 0,
+            "actualEndDate": 0,
+            "createdBy": null,
+            "createdDate": null,
+            "address": {
+                "id": "b049319b-97fb-4acc-88aa-a3f1290c58e6",
+                "tenantId": "mz",
+                "clientReferenceId": null,
+                "doorNo": null,
+                "latitude": 17.4637917,
+                "longitude": 78.3443563,
+                "locationAccuracy": 14.0,
+                "type": "CORRESPONDENCE",
+                "addressLine1": "bairro 1 luia",
+                "addressLine2": "addressLine2",
+                "landmark": null,
+                "city": null,
+                "pincode": "postalCode",
+                "buildingName": null,
+                "street": null,
+                "boundaryType": null,
+                "boundary": null,
+                "locality": {
+                    "code": "JbjApshdWPktikhzVE3kLF",
+                    "name": null,
+                    "label": null,
+                    "latitude": null,
+                    "longitude": null,
+                    "materializedPath": null
+                }
+            },
+            "additionalFields": null,
+            "isDeleted": false,
+            "rowVersion": 2,
+            "auditDetails": {
+                "createdBy": "f687ee1a-edb8-4a54-903b-afe5d713d2f6",
+                "lastModifiedBy": "testing",
+                "createdTime": 1697190188179,
+                "lastModifiedTime": 1697455305091
+            },
+            "clientAuditDetails": {
+                "createdBy": "f687ee1a-edb8-4a54-903b-afe5d713d2f6",
+                "lastModifiedBy": "f687ee1a-edb8-4a54-903b-afe5d713d2f6",
+                "createdTime": 1697103707127,
+                "lastModifiedTime": 1697103707127
+            },
+            "status": "delivered"
+        }
+    ]
+}'
