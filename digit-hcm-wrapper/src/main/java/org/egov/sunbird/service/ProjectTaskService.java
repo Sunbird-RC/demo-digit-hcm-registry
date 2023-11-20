@@ -6,6 +6,8 @@ import org.egov.common.http.client.ServiceRequestClient;
 import org.egov.common.models.household.Household;
 import org.egov.common.models.household.HouseholdMember;
 import org.egov.common.models.individual.Individual;
+import org.jboss.resteasy.client.jaxrs.ResteasyClientBuilder;
+import org.keycloak.OAuth2Constants;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.http.*;
 import org.springframework.web.client.RestTemplate;
@@ -29,6 +31,12 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
+
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.KeycloakBuilder;
+import org.keycloak.admin.client.resource.UserResource;
+import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 
 import java.util.*;
 import java.util.concurrent.TimeUnit;
@@ -169,7 +177,10 @@ public class ProjectTaskService {
                         byte[] document =  fetchTheServiceDeliveryPDF(serviceDeliveryOsId);;
                         String beneficiaryId = task.getProjectBeneficiaryClientReferenceId();
                         String mobile = beneficiaryId;
-                        String userOsid = getELockerUser(beneficiaryId, mobile);
+                        Map<String, Object> user = getELockerUser(beneficiaryId, mobile);
+                        String userOsid = (String) user.get("osid");
+                        ArrayList<String> osOwners = (ArrayList<String>) user.get("osOwner");
+                        updateUserPassword(osOwners.get(0));
                         String documentName = String.format("%s-%s.pdf", beneficiaryId, new Date().getTime());
                         String userToken = generateToken(mobile, properties.getKeycloakUserDefaultPassword());
                         String documentLocation = saveDocumentToELocker(documentName, userOsid, document, userToken);
@@ -224,6 +235,39 @@ public class ProjectTaskService {
         return (String) responseEntity.get(0).get("osid");
     }
 
+    private void updateUserPassword(String userName) {
+        String keycloakServerUrl = properties.getKeycloakHost();
+        String realm = "sunbird-rc";
+        String clientId = "admin-api";
+        String clientSecret = properties.getKeycloakAdminSecret();
+        String usernameToUpdate = userName.toLowerCase();
+        String newPassword = properties.getKeycloakUserDefaultPassword();
+
+        Keycloak keycloak = KeycloakBuilder.builder()
+                .serverUrl(keycloakServerUrl)
+                .realm(realm)
+                .grantType(OAuth2Constants.CLIENT_CREDENTIALS)
+                .clientId(clientId)
+                .clientSecret(clientSecret)
+                .resteasyClient(new ResteasyClientBuilder().connectionPoolSize(10).build())
+                .build();
+
+        UserResource userResource = keycloak.realm(realm).users().get(usernameToUpdate);
+
+
+
+        // Set the new password
+        CredentialRepresentation newCredential = new CredentialRepresentation();
+
+        newCredential.setType(CredentialRepresentation.PASSWORD);
+        newCredential.setValue(newPassword);
+        newCredential.setTemporary(false);
+
+        userResource.resetPassword(newCredential);
+        
+        keycloak.close();
+    }
+
     private String generateToken(String username, String password) {
         StringBuilder uri = new StringBuilder();
         uri.append(properties.getKeycloakHost()).append(properties.getKeycloakTokenUri());
@@ -246,7 +290,7 @@ public class ProjectTaskService {
         return ((Map<String, String>) results).get("access_token");
     }
 
-    private String getELockerUser(String beneficiaryId, String mobileNumber) throws InterruptedException {
+    private Map<String, Object> getELockerUser(String beneficiaryId, String mobileNumber) throws InterruptedException {
         StringBuilder uri = new StringBuilder();
         uri.append(properties.getRegistryHost()).append(properties.getRegistryElockerUserSearchURL());
 
@@ -269,12 +313,12 @@ public class ProjectTaskService {
         HttpEntity<String> requestEntity = new HttpEntity<>(requestBody, headers);
 
         List<Map<String, Object>> results = serviceRequestClient.fetchResult(uri, requestEntity, List.class);
-        if(results.size() == 0) {
+        if(results.isEmpty()) {
             this.inviteElockerUser(beneficiaryId, mobileNumber);
             TimeUnit.SECONDS.sleep(5);
             return this.getELockerUser(beneficiaryId, mobileNumber);
         }
-        return (String) results.get(0).get("osid");
+        return results.get(0);
     }
 
     private void inviteElockerUser(String beneficiaryId, String mobileNumber) {

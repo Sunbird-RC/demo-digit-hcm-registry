@@ -1,0 +1,16 @@
+{
+    "environment": "development",
+    "appType": "digital_wallet",
+    "keycloak": {
+        "url": "/auth",
+        "realm": "sunbird-rc",
+        "clientId": "registry-frontend"
+    },
+    "configFolder": "/assets/config/ui-config",
+    "logoPath": "/assets/images/elocker-logo.svg",
+    "title": "SL eLocker",
+    "baseUrl": "/api/v1",
+    "schemaUrl": "/api/docs/swagger.json",
+    "footerText": "Government of Sri Lanka ",
+    "languageUrl": "/api/v1/Localization/search"
+}

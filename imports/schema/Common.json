@@ -3,175 +3,216 @@
   "title": "Common",
   "definitions": {
     "Household": {
+      "$id": "#/properties/Household",
       "type": "object",
       "title": "Household Details",
       "properties": {
         "householdId": {
+          "$id": "#/properties/householdId",
           "type": "string",
           "title": "DIGIT Household ID"
         },
         "memberCount": {
+          "$id": "#/properties/memberCount",
           "type": "integer",
           "title": "Count of members of Household"
         },
         "address": {
+          "$id": "#/properties/address",
           "$ref": "#/definitions/Address"
         },
         "createdBy": {
+          "$id": "#/properties/createdBy",
           "type": "string",
           "title": "Username of the person creating the Household"
         }
       }
     },
     "Individual": {
+      "$id": "#/properties/Individual",
       "type": "object",
       "title": "Individual/Head of Household",
       "properties": {
         "individualId": {
+          "$id": "#/properties/individualId",
           "type": "string",
           "title": "DIGIT Individual ID"
         },
         "name": {
+          "$id": "#/properties/name",
           "$ref": "#/definitions/Name"
         },
         "phoneNo": {
+          "$id": "#/properties/phoneNo",
           "type": "string",
           "title": "Phone Number"
         },
         "email": {
+          "$id": "#/properties/email",
           "type": "string",
           "title": "Email Address of the Individual"
         },
         "identifiers": {
+          "$id": "#/properties/identifiers",
           "type": "array",
           "items": {
+            "$id": "#/properties/items",
             "$ref": "#/definitions/Identifier"
           }
         },
         "address": {
+          "$id": "#/properties/address",
           "$ref": "#/definitions/Address"
         },
         "createdBy": {
+          "$id": "#/properties/createdBy",
           "type": "string",
           "title": "Username of the person creating the Household"
         }
       }
     },
     "Beneficiary": {
+      "$id": "#/properties/Beneficiary",
       "type": "object",
       "title": "Beneficiary",
       "properties": {
         "beneficiaryId": {
+          "$id": "#/properties/beneficiaryId",
           "type": "string",
           "title": "Beneficiary Identifier"
         },
         "beneficiaryType": {
+          "$id": "#/properties/beneficiayType",
           "type": "string",
           "enum": ["HOUSEHOLD", "INDIVIDUAL"]
         },
         "projectId": {
+          "$id": "#/properties/projectId",
           "type": "string",
           "title": "Project associated with Benefit"
         },
         "tenantId": {
+          "$id": "#/properties/tenantId",
           "type": "string",
           "title": "tenant associated with the project"
         },
         "registrationDate": {
+          "$id": "#/properties/registrationDate",
           "type": "string",
           "format": "date-time"
         },
         "mobileNumber": {
+          "$id": "#/properties/mobileNumber",
           "type" : "string",
           "title": "mobile Number"
         }
       }
     },
     "Resource": {
+      "$id": "#/properties/Resource",
       "type": "object",
       "title": "Task",
       "properties": {
         "productVariantId": {
+          "$id": "#/properties/productVariantId",
           "type": "string",
           "title": "Product Variant ID"
         },
         "quantity": {
+          "$id": "#/properties/quantity",
           "type": "number",
           "title": "Quantity of Product delivered"
         },
         "isDelivered": {
+          "$id": "#/properties/isDelivered",
           "type": "boolean",
           "title": "Delivery status"
         },
         "deliveryComment": {
+          "$id": "#/properties/deliveryComment",
           "type": "string",
           "title": "Delivery Comment"
         },
         "deliveryDate": {
+          "$id": "#/properties/deliveryDate",
           "type": "string",
           "format": "date-time"
         },
         "deliveredBy": {
+          "$id": "#/properties/deliveredBy",
           "type": "string",
           "title": "Benefit delivered By"
         }
       }
     },
     "Address": {
+      "$id": "#/properties/Address",
       "type": "object",
       "title": "Address",
       "properties": {
         "latitude": {
+          "$id": "#/properties/latitude",
           "type": "number",
           "title": "Latitude of the Household"
         },
         "longitude": {
+          "$id": "#/properties/longitude",
           "type": "number",
           "title": "Longitude of the household"
         },
         "locationAccuracy": {
+          "$id": "#/properties/locationAccuracy",
           "type": "number",
           "title": "Location Accuracy"
         },
         "localityCode": {
+          "$id": "#/properties/localityCode",
           "type": "string",
           "title": "Boundary Code of the Locality"
         }
       }
     },
     "Name": {
+      "$id": "#/properties/Name",
       "type": "object",
       "title": "Name of the person",
       "properties": {
         "givenName": {
+          "$id": "#/properties/givenName",
           "type": "string",
           "title": "Given Name"
         },
         "familyName": {
+          "$id": "#/properties/familyName",
           "type": "string",
           "title": "Family Name"
         },
         "otherName": {
+          "$id": "#/properties/otherName",
           "type": "string",
           "title": "Other Name"
         }
       }
     },
     "Identifier": {
+      "$id": "#/properties/Identifier",
       "type": "object",
       "title": "Identity Document",
       "properties": {
         "identifierId": {
+          "$id": "#/properties/identifierId",
           "type": "string",
           "title": "Identifier ID"
         },
         "identifierType": {
+          "$id": "#/properties/identifierType",
           "type": "string",
           "title": "Identifier Type"
         }
       }
     },
     "IdentityDetails": {
+      "$id": "#/properties/IdentityDetails",
       "type": "object",
       "title": "Identity Details",
       "description": "Identity Details",
